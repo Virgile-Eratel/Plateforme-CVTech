@@ -1,0 +1,24 @@
+# .NET build output
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+*.user
+project.lock.json
+
+# IDE
+.vs/
+.idea/
+*.suo
+
+# Tests / coverage
+[Tt]est[Rr]esult*/
+coverage*/
+*.trx
+
+# OS
+.DS_Store
+
+# Secrets / config locale
+appsettings.*.local.json
+*.env
