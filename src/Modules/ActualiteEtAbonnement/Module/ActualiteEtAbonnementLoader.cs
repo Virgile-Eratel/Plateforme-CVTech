@@ -1,14 +1,17 @@
 using CVTech.Modules.ActualiteEtAbonnement.Application;
 using CVTech.Modules.ActualiteEtAbonnement.Infrastructure;
+using CVTech.Modules.ActualiteEtAbonnement.Infrastructure.Persistence;
 using FluentValidation;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace CVTech.Modules.ActualiteEtAbonnement;
 
 public static class ActualiteEtAbonnementLoader
 {
-    public static IServiceCollection AddModuleActualiteEtAbonnement(this IServiceCollection services)
+    public static IServiceCollection AddModuleActualiteEtAbonnement(
+        this IServiceCollection services, Action<DbContextOptionsBuilder> configurerBdd)
     {
         var assembly = typeof(ActualiteEtAbonnementLoader).Assembly;
 
@@ -18,12 +21,11 @@ public static class ActualiteEtAbonnementLoader
         // SignalR pour les notifications in-app temps réel (ADR 0009).
         services.AddSignalR();
 
-        services.AddSingleton<DepotArticlesEnMemoire>();
-        services.AddSingleton<IDepotArticles>(sp => sp.GetRequiredService<DepotArticlesEnMemoire>());
-        services.AddSingleton<DepotAbonnementsEnMemoire>();
-        services.AddSingleton<IDepotAbonnements>(sp => sp.GetRequiredService<DepotAbonnementsEnMemoire>());
-        services.AddSingleton<DepotNotificationsEnMemoire>();
-        services.AddSingleton<IDepotNotifications>(sp => sp.GetRequiredService<DepotNotificationsEnMemoire>());
+        // Persistance EF Core / Azure SQL (schéma « actualite »).
+        services.AddDbContext<ActualiteDbContext>(configurerBdd);
+        services.AddScoped<IDepotArticles, DepotArticlesEfCore>();
+        services.AddScoped<IDepotAbonnements, DepotAbonnementsEfCore>();
+        services.AddScoped<IDepotNotifications, DepotNotificationsEfCore>();
 
         services.AddSingleton<IGenerateurRss, GenerateurRss>();
         services.AddScoped<INotificateurTempsReel, NotificateurSignalR>();

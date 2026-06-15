@@ -7,7 +7,8 @@ public sealed class BaremeTJM : ObjetValeur
 {
     public decimal MontantJournalier { get; }
 
-    private BaremeTJM(decimal montant) => MontantJournalier = montant;
+    // Nom du paramètre aligné sur la propriété pour permettre le binding du constructeur par EF Core.
+    private BaremeTJM(decimal montantJournalier) => MontantJournalier = montantJournalier;
 
     public static BaremeTJM Creer(decimal montant)
     {

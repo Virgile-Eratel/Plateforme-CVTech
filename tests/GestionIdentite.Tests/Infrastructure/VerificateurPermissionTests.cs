@@ -1,3 +1,4 @@
+using CVTech.Modules.GestionIdentite.Application;
 using CVTech.Modules.GestionIdentite.Contracts;
 using CVTech.Modules.GestionIdentite.Domaine;
 using CVTech.Modules.GestionIdentite.Infrastructure;
@@ -9,10 +10,24 @@ namespace CVTech.Modules.GestionIdentite.Tests.Infrastructure;
 
 public class VerificateurPermissionTests
 {
+    /// <summary>Faux dépôt minimal : le VerificateurPermission n'a besoin que d'ObtenirAsync.</summary>
+    private sealed class DepotUtilisateursFactice : IDepotUtilisateurs
+    {
+        private readonly Dictionary<Guid, Utilisateur> _utilisateurs = new();
+        public Task AjouterAsync(Utilisateur utilisateur, CancellationToken ct = default)
+        {
+            _utilisateurs[utilisateur.Id] = utilisateur;
+            return Task.CompletedTask;
+        }
+        public Task<Utilisateur?> ObtenirAsync(Guid id, CancellationToken ct = default) =>
+            Task.FromResult(_utilisateurs.GetValueOrDefault(id));
+        public Task EnregistrerAsync(CancellationToken ct = default) => Task.CompletedTask;
+    }
+
     private static async Task<(VerificateurPermission verificateur, Utilisateur utilisateur)>
         PreparerAsync(RoleUtilisateur role, bool bloque = false)
     {
-        var depot = new DepotUtilisateursEnMemoire();
+        var depot = new DepotUtilisateursFactice();
         var utilisateur = Utilisateur.Inscrire($"{role}@cvtech.fr", role);
         if (bloque) utilisateur.Bloquer();
         await depot.AjouterAsync(utilisateur);

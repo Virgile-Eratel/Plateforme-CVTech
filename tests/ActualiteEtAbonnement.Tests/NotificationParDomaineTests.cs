@@ -1,7 +1,7 @@
-using CVTech.Modules.ActualiteEtAbonnement.Application;
 using CVTech.Modules.ActualiteEtAbonnement.Application.EventHandlers;
+using CVTech.Modules.ActualiteEtAbonnement.Application;
 using CVTech.Modules.ActualiteEtAbonnement.Domaine;
-using CVTech.Modules.ActualiteEtAbonnement.Infrastructure;
+using CVTech.Modules.ActualiteEtAbonnement.Tests.Doubles;
 using CVTech.Modules.CatalogueEmploi.Contracts;
 using CVTech.SharedKernel.Domaine;
 using FluentAssertions;
@@ -15,8 +15,8 @@ public class NotificationParDomaineTests
     public async Task SeulsLesAbonnésDuDomaineConcernéSontNotifiésÀLaPublication()
     {
         // Arrange : deux abonnés sur des domaines différents.
-        var abonnements = new DepotAbonnementsEnMemoire();
-        var notifications = new DepotNotificationsEnMemoire();
+        var abonnements = new DepotAbonnementsFactice();
+        var notifications = new DepotNotificationsFactice();
         var notificateur = Substitute.For<INotificateurTempsReel>();
 
         var abonneCloud = Guid.NewGuid();

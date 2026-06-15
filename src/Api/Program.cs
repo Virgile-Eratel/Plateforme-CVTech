@@ -6,9 +6,11 @@ using CVTech.Modules.CatalogueEmploi;
 using CVTech.Modules.CatalogueEmploi.Client;
 using CVTech.Modules.GestionIdentite;
 using CVTech.Modules.GestionIdentite.Client;
+using CVTech.Api;
 using CVTech.SharedKernel.Comportements;
 using CVTech.SharedKernel.Evenements;
 using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,13 +23,31 @@ builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBeh
 builder.Services.AddCors(options => options.AddDefaultPolicy(p =>
     p.AllowAnyHeader().AllowAnyMethod().SetIsOriginAllowed(_ => true).AllowCredentials()));
 
+// --- Persistance (ADR 0005) : SQLite en local/dev (un fichier par module), Azure SQL au déploiement.
+// Le provider est choisi par configuration ("Persistence:Provider" = "Sqlite" | "SqlServer").
+var fournisseur = builder.Configuration["Persistence:Provider"] ?? "Sqlite";
+var chaineConnexion = builder.Configuration.GetConnectionString("CVTech");
+
+Action<DbContextOptionsBuilder> Bdd(string schema) => options =>
+{
+    if (fournisseur.Equals("SqlServer", StringComparison.OrdinalIgnoreCase))
+        options.UseSqlServer(chaineConnexion,
+            sql => sql.MigrationsHistoryTable("__EFMigrationsHistory", schema));
+    else
+        options.UseSqlite($"Data Source=cvtech-{schema}.db");
+};
+
 // --- Enregistrement des 4 modules (composition root global) ---
-builder.Services.AddModuleGestionIdentite();
-builder.Services.AddModuleCatalogueEmploi();
-builder.Services.AddModuleAppelOffreFreelance();
-builder.Services.AddModuleActualiteEtAbonnement();
+builder.Services.AddModuleGestionIdentite(Bdd("identite"));
+builder.Services.AddModuleCatalogueEmploi(Bdd("emploi"));
+builder.Services.AddModuleAppelOffreFreelance(Bdd("freelance"));
+builder.Services.AddModuleActualiteEtAbonnement(Bdd("actualite"));
 
 var app = builder.Build();
+
+// Prépare la base au démarrage (ignoré par l'outillage EF design-time : migrations add/script).
+if (!EF.IsDesignTime)
+    await app.InitialiserBaseDeDonneesAsync(fournisseur);
 
 app.UseCors();
 

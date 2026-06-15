@@ -22,3 +22,8 @@ coverage*/
 # Secrets / config locale
 appsettings.*.local.json
 *.env
+
+# Bases SQLite locales (dev) — non versionnées
+*.db
+*.db-shm
+*.db-wal
