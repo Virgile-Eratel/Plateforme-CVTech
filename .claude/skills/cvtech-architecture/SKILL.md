@@ -1,8 +1,8 @@
 ---
-name: cvtech-architecture-guard
-description: Force le respect de la structure des couches du projet Plateforme-CVTech
-globs: "src/Modules/**/*.cs"
+name: cvtech-architecture
+description: Règles d'architecture du monolithe modulaire Plateforme-CVTech (.NET 10). À consulter AVANT d'ajouter ou modifier du code sous src/Modules/**, src/SharedKernel ou src/Api : structure des 5 couches d'un module, sens des dépendances, interdictions strictes (pas de DbContext dans le Domaine, pas de logique dans les endpoints, pas de référence croisée entre modules), communication inter-modules (contrat public ou bus d'événements) et vertical slices.
 ---
+
 # CONTEXTE
 Nous sommes en 2026. Le projet **Plateforme-CVTech** est un **monolithe modulaire** en
 **.NET 10**. Le code doit refléter le langage métier en **français** pour les couches
@@ -12,6 +12,8 @@ l'infrastructure et la technique (Controllers, Handlers, Infrastructure, ModuleL
 Avant toute génération, consulte :
 - `CONTEXT.md` — glossaire du langage métier (orthographe et sens des termes à respecter).
 - `docs/adr/0001` à `0003`, `0006` — décisions d'architecture.
+
+S'applique à : `src/Modules/**/*.cs` (et par extension `src/SharedKernel`, `src/Api`).
 
 # INSTRUCTIONS
 
@@ -67,5 +69,5 @@ Tout type du Domaine et de l'Application porte un nom **français** issu de `CON
 1. Place-la dans le bon module et la bonne couche.
 2. Crée la vertical slice complète (Command/Query + Handler + Validator).
 3. Si elle touche un autre module → événement ou contrat public, jamais de référence directe.
-4. Respecte d'abord `regles-permissions.md` (vérif en tête de handler) et `regles-tdd.md`
+4. Respecte d'abord la skill `cvtech-permissions` (vérif en tête de handler) et `cvtech-tdd`
    (test rouge d'abord).

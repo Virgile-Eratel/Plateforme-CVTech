@@ -1,12 +1,14 @@
 ---
-name: cvtech-tdd-expert
-description: Force l'écriture des tests de spécification avant le code métier
-globs: "tests/**/*.cs"
+name: cvtech-tdd
+description: Protocole TDD du projet Plateforme-CVTech. À consulter pour TOUTE écriture de code de production ou de test sous tests/** et src/Modules/** : écrire d'abord le test rouge (Red → Green → Refactor), nommer les tests en français décrivant une règle métier, utiliser xUnit + FluentAssertions + NSubstitute, et couvrir en priorité invariants du Domaine, permissions, événements, RSS et notifications.
 ---
+
 # PROTOCOLE TDD
 
 Le code de production ne s'écrit **jamais** avant un test rouge qui le justifie. Cycle
 imposé : **Red → Green → Refactor**.
+
+S'applique à : `tests/**/*.cs` (et au code de production qu'ils justifient).
 
 ## 1. Ordre de génération (non négociable)
 1. **RED** — écrire d'abord le(s) test(s) xUnit décrivant la règle métier. Le test doit
@@ -62,7 +64,7 @@ Utiliser `[Theory]` + `[InlineData]` quand la même règle se décline sur plusi
 - **Invariants du Domaine** : règles d'agrégat, value objects (ex : un `BaremeTJM` négatif est
   refusé, un `DomaineMetier` vide est invalide).
 - **Permissions** : pour chaque action protégée, un test prouve le **refus** d'un rôle non
-  autorisé et d'un **compte bloqué** (voir `regles-permissions.md`).
+  autorisé et d'un **compte bloqué** (voir la skill `cvtech-permissions`).
 - **Événements** : publier une annonce/AO émet bien l'événement attendu sur le bus.
 - **RSS** : le flux ne contient que des `ArticleActualite`, jamais d'annonce ni d'AO.
 - **Notifications** : seuls les abonnés du bon `DomaineMetier` sont notifiés.

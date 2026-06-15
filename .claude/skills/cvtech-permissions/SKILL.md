@@ -1,14 +1,16 @@
 ---
-name: cvtech-permission-guard
-description: Vérifie que chaque cas d'usage contrôle les permissions avant l'action métier
-globs: "src/Modules/**/Application/Features/**/*.cs"
+name: cvtech-permissions
+description: Règles de contrôle des permissions du projet Plateforme-CVTech. À consulter pour TOUT cas d'usage sous src/Modules/**/Application/Features/** : chaque Handler d'action protégée doit appeler IVerificateurPermission.ExigerAsync en première ligne, traduire un refus en HTTP 403, vérifier la propriété de la ressource, refuser tout compte bloqué, et respecter la matrice de permissions (Candidat / Entreprise / Administrateur) qui est la source de vérité.
 ---
+
 # CONTEXTE
 Trois rôles cohabitent : **Candidat**, **Entreprise**, **Administrateur**. Aucune action
 métier ne doit s'exécuter sans avoir interrogé en amont le contrat `IVerificateurPermission`
 exposé par le module `GestionIdentite` (ADR 0004). Les annonces et appels d'offre sont
 consultables **anonymement** ; toute action (CV, candidature, proposition, abonnement,
 publication, modération) exige une autorisation.
+
+S'applique à : `src/Modules/**/Application/Features/**/*.cs`.
 
 # INSTRUCTIONS
 
@@ -82,4 +84,4 @@ Un compte bloqué (cf. `CONTEXT.md`) échoue à **toute** action authentifiée :
 ## 7. Preuve par test
 Chaque action protégée doit être accompagnée d'un test prouvant qu'elle est **refusée** pour
 un rôle non autorisé ou un compte bloqué (ex : `UnCandidatBloquéNePeutPasPostuler`,
-`UneEntrepriseNePeutPasPostuler`). Voir `regles-tdd.md`.
+`UneEntrepriseNePeutPasPostuler`). Voir la skill `cvtech-tdd`.

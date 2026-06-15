@@ -10,7 +10,7 @@ public sealed class BloquerCompteHandler(
 {
     public async Task Handle(BloquerCompteCommand commande, CancellationToken ct)
     {
-        // 1. PERMISSION D'ABORD — toujours en première ligne (ADR 0004, regles-permissions.md).
+        // 1. PERMISSION D'ABORD — toujours en première ligne (ADR 0004, skill cvtech-permissions).
         await permissions.ExigerAsync(commande.AppelantId, ActionMetier.BloquerOuReactiverCompte, ct: ct);
 
         // 2. Action métier.
