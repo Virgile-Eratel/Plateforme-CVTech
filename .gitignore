@@ -27,3 +27,6 @@ appsettings.*.local.json
 *.db
 *.db-shm
 *.db-wal
+
+# Artefact de compilation Bicep (généré par az bicep build)
+infra/main.json

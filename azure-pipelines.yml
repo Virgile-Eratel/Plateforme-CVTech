@@ -1,0 +1,111 @@
+# =============================================================================
+# Plateforme-CVTech — Pipeline Azure DevOps (ADR 0010)
+# restore -> test -> build -> publish -> deploy.
+# Le déploiement n'a lieu QUE si l'étape de tests est au vert (dependsOn + condition).
+# Exécuté sur l'agent self-hosted (vsts-agent-osx-arm64).
+# =============================================================================
+
+trigger:
+  branches:
+    include:
+      - main
+
+# Agent self-hosted macOS ARM. Adapter le nom du pool à celui enregistré par l'agent.
+pool:
+  name: Default
+
+variables:
+  buildConfiguration: 'Release'
+  dotnetVersion: '10.0.x'
+  # --- À définir dans les variables de pipeline (Library / pipeline variables) ---
+  # serviceConnexionAzure : nom de la service connection ARM
+  # groupeRessources      : resource group cible
+  # prefixe               : préfixe de nommage (ex: cvtech)
+  # adminSqlLogin         : login admin Azure SQL
+  # adminSqlPassword      : mot de passe admin Azure SQL (variable SECRÈTE)
+
+stages:
+  # ---------------------------------------------------------------------------
+  - stage: Build_Test
+    displayName: 'Restore · Test · Build · Publish'
+    jobs:
+      - job: ci
+        displayName: 'Intégration continue'
+        steps:
+          - task: UseDotNet@2
+            displayName: 'Installer le SDK .NET'
+            inputs:
+              packageType: 'sdk'
+              version: '$(dotnetVersion)'
+
+          - script: dotnet restore CVTech.slnx
+            displayName: 'dotnet restore'
+
+          # Le déploiement (stage suivant) dépend du succès de ce stage : tests rouges = pas de déploiement.
+          - script: dotnet test CVTech.slnx --configuration $(buildConfiguration) --logger trx --results-directory $(Agent.TempDirectory)/tests
+            displayName: 'dotnet test (barrière qualité)'
+
+          - task: PublishTestResults@2
+            displayName: 'Publier les résultats de tests'
+            condition: succeededOrFailed()
+            inputs:
+              testResultsFormat: 'VSTest'
+              testResultsFiles: '$(Agent.TempDirectory)/tests/*.trx'
+
+          - script: dotnet build CVTech.slnx --configuration $(buildConfiguration) --no-restore
+            displayName: 'dotnet build'
+
+          # Publie l'API : par référence projet, le front Blazor WASM est inclus dans wwwroot.
+          - script: dotnet publish src/Api/CVTech.Api.csproj --configuration $(buildConfiguration) --output $(Build.ArtifactStagingDirectory)/app
+            displayName: 'dotnet publish (API + front WASM)'
+
+          - task: PublishPipelineArtifact@1
+            displayName: 'Publier l''artefact'
+            inputs:
+              targetPath: '$(Build.ArtifactStagingDirectory)/app'
+              artifact: 'cvtech-app'
+
+  # ---------------------------------------------------------------------------
+  - stage: Deploy
+    displayName: 'Déploiement Azure (Bicep + App Service)'
+    dependsOn: Build_Test
+    condition: succeeded() # uniquement si les tests sont verts
+    jobs:
+      - deployment: deploiement
+        displayName: 'Provisionner et déployer'
+        environment: 'cvtech-production'
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - download: current
+                  artifact: cvtech-app
+
+                # 1) Provisionne / met à jour l'infra (Azure SQL + App Service).
+                - task: AzureCLI@2
+                  displayName: 'Déployer l''infrastructure Bicep'
+                  inputs:
+                    azureSubscription: '$(serviceConnexionAzure)'
+                    scriptType: 'bash'
+                    scriptLocation: 'inlineScript'
+                    inlineScript: |
+                      az deployment group create \
+                        --resource-group "$(groupeRessources)" \
+                        --template-file infra/main.bicep \
+                        --parameters prefixe="$(prefixe)" \
+                                     adminSqlLogin="$(adminSqlLogin)" \
+                                     adminSqlPassword="$(adminSqlPassword)" \
+                        --query "properties.outputs.nomApplication.value" -o tsv \
+                        > "$(Agent.TempDirectory)/nomApp.txt"
+                      echo "##vso[task.setvariable variable=nomApp]$(cat $(Agent.TempDirectory)/nomApp.txt)"
+
+                # 2) Déploie le binaire publié sur l'App Service.
+                #    Au démarrage, l'app applique les migrations EF Core sur Azure SQL.
+                - task: AzureWebApp@1
+                  displayName: 'Déployer sur App Service'
+                  inputs:
+                    azureSubscription: '$(serviceConnexionAzure)'
+                    appType: 'webAppLinux'
+                    appName: '$(nomApp)'
+                    package: '$(Pipeline.Workspace)/cvtech-app'
+                    runtimeStack: 'DOTNETCORE|10.0'
