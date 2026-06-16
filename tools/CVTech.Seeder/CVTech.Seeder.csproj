@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>CVTech.Seeder</RootNamespace>
+  </PropertyGroup>
+
+  <!--
+    Outil de dev (hors CVTech.slnx) : génère de fausses données réalistes dans Azure SQL.
+    Composition root local : il a le droit de référencer tous les modules (comme src/Api),
+    instancie chaque DbContext et appelle les méthodes factory du Domaine (invariants respectés).
+  -->
+  <ItemGroup>
+    <PackageReference Include="Bogus" Version="35.6.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.9" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\SharedKernel\CVTech.SharedKernel.csproj" />
+    <ProjectReference Include="..\..\src\Modules\GestionIdentite\Module\CVTech.Modules.GestionIdentite.csproj" />
+    <ProjectReference Include="..\..\src\Modules\CatalogueEmploi\Module\CVTech.Modules.CatalogueEmploi.csproj" />
+    <ProjectReference Include="..\..\src\Modules\AppelOffreFreelance\Module\CVTech.Modules.AppelOffreFreelance.csproj" />
+    <ProjectReference Include="..\..\src\Modules\ActualiteEtAbonnement\Module\CVTech.Modules.ActualiteEtAbonnement.csproj" />
+  </ItemGroup>
+
+</Project>
