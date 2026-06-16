@@ -11,6 +11,10 @@ Front **Blazor WebAssembly** (3 parcours : Candidat / Entreprise / Administrateu
 l'API. Persistance **EF Core / Azure SQL** (un schéma par module). Déploiement **Bicep + Azure DevOps**.
 
 > 📄 Déploiement Azure détaillé : voir **[DEPLOIEMENT-AZURE.md](DEPLOIEMENT-AZURE.md)**.
+>
+> 🌱 **Données de démo** : l'outil `tools/CVTech.Seeder` (Bogus, locale fr) peuple Azure SQL avec
+> des données réalistes et 3 comptes de test (`admin@` / `entreprise@` / `candidat@cvtech.fr`,
+> mot de passe `Demo!2026`). Voir [DEPLOIEMENT-AZURE.md §A.7](DEPLOIEMENT-AZURE.md).
 
 ---
 
@@ -25,7 +29,7 @@ dotnet restore CVTech.slnx
 dotnet build   CVTech.slnx
 
 # 3. Lancer les tests (doivent être au vert avant de démarrer)
-dotnet test CVTech.slnx          # 45 tests
+dotnet test CVTech.slnx          # 51 tests
 
 # 4. Démarrer l'application (API + front Blazor servis ensemble)
 ASPNETCORE_URLS=http://localhost:5099 \
@@ -131,6 +135,32 @@ graph LR
 
 ---
 
+## 🔐 Matrice de permissions
+
+Source de vérité du contrôle d'accès, portée par `GestionIdentite` et appliquée par
+`IVerificateurPermission.ExigerAsync` en **première ligne** de chaque handler protégé
+(refus → **403**). Les trois autres modules ne lisent jamais la base d'identité directement.
+
+| Action | Anonyme | Candidat | Entreprise | Admin |
+|---|:---:|:---:|:---:|:---:|
+| Consulter une annonce / un appel d'offre | ✅ | ✅ | ✅ | ✅ |
+| Consulter le fil RSS (`/feed/rss`) | ✅ | ✅ | ✅ | ✅ |
+| Constituer / modifier son CV | ❌ | ✅ | ❌ | ✅ |
+| Postuler à une annonce | ❌ | ✅ | ❌ | ❌ |
+| Soumettre une proposition freelance | ❌ | ✅ | ❌ | ❌ |
+| Publier une annonce d'emploi | ❌ | ❌ | ✅ (les siennes) | ✅ |
+| Publier un appel d'offre | ❌ | ❌ | ✅ (les siens) | ✅ |
+| Consulter les candidatures / propositions reçues | ❌ | ❌ | ✅ (siennes) | ✅ |
+| Sélectionner le lauréat d'un appel d'offre | ❌ | ❌ | ✅ (les siens) | ✅ |
+| S'abonner à un domaine métier | ❌ | ✅ | ✅ | ✅ |
+| Publier un article du fil d'actualité | ❌ | ❌ | ❌ | ✅ |
+| Modérer / supprimer une annonce ou un AO | ❌ | ❌ | ❌ | ✅ |
+| Bloquer / réactiver un compte | ❌ | ❌ | ❌ | ✅ |
+
+Un test prouve qu'une action interdite est refusée (cf. `cvtech-permissions` et la suite de tests).
+
+---
+
 ## ✅ Validation des livrables
 
 ### 1) Les 3 parcours (via le front `http://localhost:5099`)
@@ -185,7 +215,7 @@ abonné (SignalR), et **uniquement** pour les abonnés du domaine.
 ```bash
 dotnet test CVTech.slnx
 ```
-**45 tests** (xUnit + FluentAssertions + NSubstitute) couvrant invariants du Domaine,
+**51 tests** (xUnit + FluentAssertions + NSubstitute) couvrant invariants du Domaine,
 permissions (refus = 403), événements, RSS et notifications. Noms en français décrivant une règle métier.
 
 ---
