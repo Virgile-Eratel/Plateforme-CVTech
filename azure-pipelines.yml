@@ -23,6 +23,7 @@ variables:
   # prefixe               : préfixe de nommage (ex: cvtech)
   # adminSqlLogin         : login admin Azure SQL
   # adminSqlPassword      : mot de passe admin Azure SQL (variable SECRÈTE)
+  # jwtCle                : clé de signature JWT >= 32 caractères (variable SECRÈTE)
 
 stages:
   # ---------------------------------------------------------------------------
@@ -95,6 +96,7 @@ stages:
                         --parameters prefixe="$(prefixe)" \
                                      adminSqlLogin="$(adminSqlLogin)" \
                                      adminSqlPassword="$(adminSqlPassword)" \
+                                     jwtCle="$(jwtCle)" \
                         --query "properties.outputs.nomApplication.value" -o tsv \
                         > "$(Agent.TempDirectory)/nomApp.txt"
                       echo "##vso[task.setvariable variable=nomApp]$(cat $(Agent.TempDirectory)/nomApp.txt)"

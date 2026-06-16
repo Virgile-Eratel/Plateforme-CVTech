@@ -71,7 +71,7 @@ else
         _occupe = true;
         try
         {
-            await Api.SAbonnerAsync(Session.UtilisateurId!.Value, domaines, _canal);
+            await Api.SAbonnerAsync(domaines, _canal);
             Avertir($"Abonnement enregistré sur : {string.Join(", ", domaines)} (canal {_canal}).", "ok");
         }
         catch (ApiException ex) { Avertir(ex.Message, "erreur"); }

@@ -5,8 +5,8 @@ namespace CVTech.Web.Services;
 
 /// <summary>
 /// Réception des notifications in-app en temps réel via le hub SignalR /hubs/notifications.
-/// Se (re)connecte à chaque changement d'utilisateur courant, rejoint le groupe de l'utilisateur
-/// (méthode serveur « Rejoindre ») et écoute la méthode « RecevoirNotification ».
+/// Le hub est authentifié (ADR 0008) : le jeton JWT est transmis via AccessTokenProvider, et
+/// c'est le serveur qui rattache la connexion au groupe de l'utilisateur (d'après ses claims).
 /// </summary>
 public sealed class ServiceNotifications : IAsyncDisposable
 {
@@ -37,10 +37,11 @@ public sealed class ServiceNotifications : IAsyncDisposable
 
         await ArreterAsync();
 
-        if (_session.UtilisateurId is not { } id) return;
+        if (_session is not { UtilisateurId: { } id, Jeton: { } }) return;
 
         _connexion = new HubConnectionBuilder()
-            .WithUrl(_urlHub)
+            .WithUrl(_urlHub, options =>
+                options.AccessTokenProvider = () => Task.FromResult<string?>(_session.Jeton))
             .WithAutomaticReconnect()
             .Build();
 
@@ -50,11 +51,7 @@ public sealed class ServiceNotifications : IAsyncDisposable
             AuMessage?.Invoke(notification);
         });
 
-        // Rejoint son groupe à chaque (re)connexion, y compris après une reconnexion automatique.
-        _connexion.Reconnected += async _ => await _connexion.InvokeAsync("Rejoindre", id.ToString());
-
         await _connexion.StartAsync();
-        await _connexion.InvokeAsync("Rejoindre", id.ToString());
         _utilisateurConnecte = id;
     }
 

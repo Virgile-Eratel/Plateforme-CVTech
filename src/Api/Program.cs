@@ -6,11 +6,16 @@ using CVTech.Modules.CatalogueEmploi;
 using CVTech.Modules.CatalogueEmploi.Client;
 using CVTech.Modules.GestionIdentite;
 using CVTech.Modules.GestionIdentite.Client;
+using System.Text;
 using CVTech.Api;
+using CVTech.Api.Securite;
 using CVTech.SharedKernel.Comportements;
 using CVTech.SharedKernel.Evenements;
+using CVTech.SharedKernel.Securite;
 using MediatR;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,9 +24,49 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddBusEvenements();
 builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 
-// CORS pour le front Blazor WebAssembly.
+// --- Authentification JWT (ADR 0008) ---
+builder.Services.AddSingleton<IGenerateurJeton, GenerateurJetonJwt>();
+var jwt = ParametresJwt.Lire(builder.Configuration);
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = jwt.Emetteur,
+            ValidAudience = jwt.Audience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.Cle))
+        };
+
+        // SignalR (WASM) transmet le jeton via la query string sur la route du hub.
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = contexte =>
+            {
+                var jetonAcces = contexte.Request.Query["access_token"];
+                if (!string.IsNullOrEmpty(jetonAcces) &&
+                    contexte.HttpContext.Request.Path.StartsWithSegments("/hubs"))
+                {
+                    contexte.Token = jetonAcces;
+                }
+                return Task.CompletedTask;
+            }
+        };
+    });
+builder.Services.AddAuthorization();
+
+// CORS restreint aux origines déclarées ("Cors:Origines"). Le front hébergé par l'API est
+// en même origine (CORS inutile) ; la liste sert aux fronts servis ailleurs (dev, démo).
+var originesAutorisees = builder.Configuration.GetSection("Cors:Origines").Get<string[]>() ?? [];
 builder.Services.AddCors(options => options.AddDefaultPolicy(p =>
-    p.AllowAnyHeader().AllowAnyMethod().SetIsOriginAllowed(_ => true).AllowCredentials()));
+{
+    if (originesAutorisees.Length > 0)
+        p.WithOrigins(originesAutorisees).AllowAnyHeader().AllowAnyMethod().AllowCredentials();
+}));
 
 // --- Persistance (ADR 0005) : SQLite en local/dev (un fichier par module), Azure SQL au déploiement.
 // Le provider est choisi par configuration ("Persistence:Provider" = "Sqlite" | "SqlServer").
@@ -54,6 +99,10 @@ app.UseCors();
 // Sert le front Blazor WebAssembly hébergé dans le même App Service (ADR 0007/0010).
 app.UseBlazorFrameworkFiles();
 app.UseStaticFiles();
+
+// Authentification/autorisation (ADR 0008) — avant les endpoints.
+app.UseAuthentication();
+app.UseAuthorization();
 
 // --- Endpoints exposés par chaque module (couche Client) ---
 app.MapGestionIdentite();

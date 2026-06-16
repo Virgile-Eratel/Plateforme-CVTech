@@ -17,5 +17,8 @@ public sealed class DepotUtilisateursEfCore(IdentiteDbContext contexte) : IDepot
     public Task<Utilisateur?> ObtenirAsync(Guid id, CancellationToken ct = default) =>
         contexte.Utilisateurs.FirstOrDefaultAsync(u => u.Id == id, ct);
 
+    public Task<Utilisateur?> ObtenirParEmailAsync(string email, CancellationToken ct = default) =>
+        contexte.Utilisateurs.FirstOrDefaultAsync(u => u.Email == email, ct);
+
     public Task EnregistrerAsync(CancellationToken ct = default) => contexte.SaveChangesAsync(ct);
 }

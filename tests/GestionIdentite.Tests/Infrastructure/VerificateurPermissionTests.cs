@@ -21,6 +21,8 @@ public class VerificateurPermissionTests
         }
         public Task<Utilisateur?> ObtenirAsync(Guid id, CancellationToken ct = default) =>
             Task.FromResult(_utilisateurs.GetValueOrDefault(id));
+        public Task<Utilisateur?> ObtenirParEmailAsync(string email, CancellationToken ct = default) =>
+            Task.FromResult(_utilisateurs.Values.FirstOrDefault(u => u.Email == email));
         public Task EnregistrerAsync(CancellationToken ct = default) => Task.CompletedTask;
     }
 

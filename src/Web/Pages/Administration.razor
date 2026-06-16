@@ -76,7 +76,7 @@ else
         _occupe = true;
         try
         {
-            await Api.PublierArticleAsync(Session.UtilisateurId!.Value, _titre, _contenu, _categorie,
+            await Api.PublierArticleAsync(_titre, _contenu, _categorie,
                 Vide(_domaine), Vide(_sourceNom), Vide(_sourceUrl));
             Avertir($"Article « {_titre} » publié — visible dans le flux RSS.", "ok");
             _titre = _contenu = ""; _domaine = _sourceNom = _sourceUrl = "";
@@ -91,7 +91,7 @@ else
         _occupe = true;
         try
         {
-            await Api.BloquerCompteAsync(Session.UtilisateurId!.Value, cible);
+            await Api.BloquerCompteAsync(cible);
             Avertir($"Compte {cible} bloqué.", "ok");
             _cible = "";
         }

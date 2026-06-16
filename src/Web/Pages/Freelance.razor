@@ -159,7 +159,7 @@ else
         _occupe = true;
         try
         {
-            await Api.PublierAppelOffreAsync(Session.UtilisateurId!.Value, _titre, _contexte, _livrables,
+            await Api.PublierAppelOffreAsync(_titre, _contexte, _livrables,
                 new DateTimeOffset(_deadline, TimeSpan.Zero), _budgetMin, _budgetMax, _domainePublication);
             Avertir($"Appel d'offre « {_titre} » publié dans le domaine « {_domainePublication} ».", "ok");
             _titre = _contexte = _livrables = ""; _domainePublication = "";
@@ -174,7 +174,7 @@ else
         _occupe = true;
         try
         {
-            var id = await Api.SoumettrePropositionAsync(Session.UtilisateurId!.Value, appelOffreId, _tjm, _duree, _methodologie);
+            var id = await Api.SoumettrePropositionAsync(appelOffreId, _tjm, _duree, _methodologie);
             Avertir($"Proposition soumise — identifiant {id} (à communiquer à l'entreprise pour la sélection).", "ok");
             _aoEnProposition = null; _methodologie = "";
         }
@@ -192,7 +192,7 @@ else
         _occupe = true;
         try
         {
-            await Api.SelectionnerLaureatAsync(Session.UtilisateurId!.Value, ao, prop);
+            await Api.SelectionnerLaureatAsync(ao, prop);
             Avertir("Lauréat désigné.", "ok");
             _aoLaureat = _propositionLaureat = "";
             await Charger();

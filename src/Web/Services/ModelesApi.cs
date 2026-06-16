@@ -29,3 +29,7 @@ public sealed record NotificationTempsReel(Guid Id, string Titre, string Message
 // --- Réponse standard { id } des créations ---
 
 public sealed record CreationReponse(Guid Id);
+
+// --- Réponse d'inscription / connexion (jeton JWT) ---
+
+public sealed record SessionReponse(Guid Id, string Email, string Role, string Jeton);

@@ -46,3 +46,4 @@ si les tests sont verts). Variables de pipeline à définir :
 | `prefixe` | Préfixe de nommage (ex. `cvtech`) | non |
 | `adminSqlLogin` | Login admin Azure SQL | non |
 | `adminSqlPassword` | Mot de passe admin Azure SQL | **oui** |
+| `jwtCle` | Clé de signature JWT (≥ 32 caractères, ADR 0008) | **oui** |

@@ -2,11 +2,10 @@
 @inject ApiClient Api
 @inject SessionUtilisateur Session
 
-<h1>Compte &amp; parcours</h1>
+<h1>Compte &amp; connexion</h1>
 <p class="muet">
-    L'authentification JWT n'étant pas encore branchée (ADR 0008), l'identité est portée par le
-    front : inscrivez-vous pour obtenir un identifiant, ou reconnectez-vous avec un identifiant existant
-    pour rejouer un parcours.
+    Authentification par jeton JWT (ADR 0008) : votre identité est portée par le jeton, jamais
+    saisie dans les formulaires d'action. Inscrivez-vous ou connectez-vous pour obtenir un jeton.
 </p>
 
 @if (Session.EstConnecte)
@@ -25,9 +24,11 @@
 
 <div class="grille">
     <div class="carte">
-        <h3>S'inscrire (nouveau compte)</h3>
+        <h3>S'inscrire</h3>
         <label>Email</label>
-        <input @bind="_email" placeholder="prenom.nom@exemple.fr" />
+        <input @bind="_emailInscription" placeholder="prenom.nom@exemple.fr" />
+        <label>Mot de passe (8 caractères min.)</label>
+        <input type="password" @bind="_mdpInscription" />
         <label>Rôle</label>
         <select @bind="_role">
             <option value="@RoleUtilisateur.Candidat">Candidat</option>
@@ -39,71 +40,73 @@
     </div>
 
     <div class="carte">
-        <h3>Se reconnecter (identifiant existant)</h3>
-        <p class="muet">Pour reprendre un parcours déjà créé (ex. l'entreprise qui a publié une annonce).</p>
-        <label>Identifiant (GUID)</label>
-        <input @bind="_idExistant" placeholder="00000000-0000-0000-0000-000000000000" />
-        <label>Email (affichage)</label>
-        <input @bind="_emailExistant" placeholder="rappel de l'email" />
-        <label>Rôle</label>
-        <select @bind="_roleExistant">
-            <option value="@RoleUtilisateur.Candidat">Candidat</option>
-            <option value="@RoleUtilisateur.Entreprise">Entreprise</option>
-            <option value="@RoleUtilisateur.Administrateur">Administrateur</option>
-        </select>
+        <h3>Se connecter</h3>
+        <label>Email</label>
+        <input @bind="_emailConnexion" placeholder="votre email" />
+        <label>Mot de passe</label>
+        <input type="password" @bind="_mdpConnexion" />
         <br /><br />
-        <button class="secondaire" @onclick="Reconnecter">Se reconnecter</button>
+        <button class="secondaire" @onclick="Connecter" disabled="@_occupe">Se connecter</button>
     </div>
 </div>
 
 @if (_message is not null)
 {
-    <div class="alerte @_classeMessage">@_message</div>
+    <div class="alerte @_classe">@_message</div>
 }
 
 @code {
-    private string _email = "";
+    private string _emailInscription = "", _mdpInscription = "";
     private RoleUtilisateur _role = RoleUtilisateur.Candidat;
-
-    private string _idExistant = "";
-    private string _emailExistant = "";
-    private RoleUtilisateur _roleExistant = RoleUtilisateur.Entreprise;
+    private string _emailConnexion = "", _mdpConnexion = "";
 
     private bool _occupe;
     private string? _message;
-    private string _classeMessage = "info";
+    private string _classe = "info";
 
     private async Task Inscrire()
     {
-        if (string.IsNullOrWhiteSpace(_email)) { Avertir("Saisissez un email.", "erreur"); return; }
+        if (string.IsNullOrWhiteSpace(_emailInscription)) { Avertir("Saisissez un email.", "erreur"); return; }
         _occupe = true;
         try
         {
-            var id = await Api.InscrireAsync(_email.Trim(), _role);
-            Session.Connecter(id, _email.Trim(), _role);
-            Avertir($"Compte créé — identifiant {id}. Vous êtes connecté en tant que {_role}.", "ok");
+            var s = await Api.InscrireAsync(_emailInscription.Trim(), _mdpInscription, _role);
+            OuvrirSession(s);
+            Avertir($"Compte créé — connecté en tant que {s.Role}.", "ok");
         }
         catch (ApiException ex) { Avertir(ex.Message, "erreur"); }
         finally { _occupe = false; }
     }
 
-    private void Reconnecter()
+    private async Task Connecter()
     {
-        if (!Guid.TryParse(_idExistant, out var id)) { Avertir("Identifiant GUID invalide.", "erreur"); return; }
-        var email = string.IsNullOrWhiteSpace(_emailExistant) ? $"{_roleExistant}" : _emailExistant.Trim();
-        Session.Connecter(id, email, _roleExistant);
-        Avertir($"Reconnecté en tant que {_roleExistant}.", "ok");
+        _occupe = true;
+        try
+        {
+            var s = await Api.ConnecterAsync(_emailConnexion.Trim(), _mdpConnexion);
+            OuvrirSession(s);
+            Avertir($"Connecté en tant que {s.Role}.", "ok");
+        }
+        catch (ApiException ex) { Avertir(ex.Message, "erreur"); }
+        finally { _occupe = false; }
+    }
+
+    private void OuvrirSession(SessionReponse s)
+    {
+        var role = Enum.Parse<RoleUtilisateur>(s.Role);
+        Session.Ouvrir(s.Id, s.Email, role, s.Jeton);
+        _mdpInscription = _mdpConnexion = "";
     }
 
     private void Deconnecter()
     {
-        Session.Deconnecter();
+        Session.Fermer();
         Avertir("Déconnecté.", "info");
     }
 
     private void Avertir(string message, string classe)
     {
         _message = message;
-        _classeMessage = classe;
+        _classe = classe;
     }
 }

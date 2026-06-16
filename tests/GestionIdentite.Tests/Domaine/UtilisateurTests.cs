@@ -34,6 +34,26 @@ public class UtilisateurTests
     }
 
     [Fact]
+    public void DéfinirUnMotDePasseEnregistreSonEmpreinte()
+    {
+        var utilisateur = Utilisateur.Inscrire("candidat@cvtech.fr", RoleUtilisateur.Candidat);
+
+        utilisateur.DefinirMotDePasse("empreinte-hachée");
+
+        utilisateur.MotDePasseHash.Should().Be("empreinte-hachée");
+    }
+
+    [Fact]
+    public void UneEmpreinteDeMotDePasseVideEstRefusée()
+    {
+        var utilisateur = Utilisateur.Inscrire("candidat@cvtech.fr", RoleUtilisateur.Candidat);
+
+        Action action = () => utilisateur.DefinirMotDePasse("  ");
+
+        action.Should().Throw<ArgumentException>();
+    }
+
+    [Fact]
     public void UnAdministrateurNePeutPasÊtreBloqué()
     {
         var admin = Utilisateur.Inscrire("admin@cvtech.fr", RoleUtilisateur.Administrateur);

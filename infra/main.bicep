@@ -18,6 +18,10 @@ param adminSqlLogin string
 @secure()
 param adminSqlPassword string
 
+@description('Clé de signature des jetons JWT, >= 32 caractères (variable secrète de pipeline, ADR 0008).')
+@secure()
+param jwtCle string
+
 @description('Référence (SKU) du plan App Service.')
 param skuPlan string = 'B1'
 
@@ -94,6 +98,10 @@ resource app 'Microsoft.Web/sites@2023-12-01' = {
         {
           name: 'Persistence__Provider'
           value: 'SqlServer'
+        }
+        {
+          name: 'Jwt__Cle'
+          value: jwtCle
         }
       ]
       connectionStrings: [

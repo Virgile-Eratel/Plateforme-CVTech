@@ -12,6 +12,9 @@ public sealed class Utilisateur : RacineAgregat<Guid>
     public RoleUtilisateur Role { get; private set; }
     public bool EstBloque { get; private set; }
 
+    /// <summary>Empreinte du mot de passe (hachée par l'infrastructure, jamais stockée en clair).</summary>
+    public string? MotDePasseHash { get; private set; }
+
     private Utilisateur() { } // pour la reconstitution par l'infrastructure
 
     public static Utilisateur Inscrire(string email, RoleUtilisateur role)
@@ -26,6 +29,14 @@ public sealed class Utilisateur : RacineAgregat<Guid>
             Role = role,
             EstBloque = false
         };
+    }
+
+    /// <summary>Associe une empreinte de mot de passe au compte (déjà hachée par l'infrastructure).</summary>
+    public void DefinirMotDePasse(string hash)
+    {
+        if (string.IsNullOrWhiteSpace(hash))
+            throw new ArgumentException("L'empreinte du mot de passe est requise.", nameof(hash));
+        MotDePasseHash = hash;
     }
 
     public void Bloquer()

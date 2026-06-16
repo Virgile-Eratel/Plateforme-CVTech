@@ -112,7 +112,8 @@ graph LR
 
 | Méthode | Route | Rôle requis | Description |
 |---|---|---|---|
-| POST | `/identite/inscription` | public | Inscription (`role` : 0=Candidat, 1=Entreprise, 2=Admin) |
+| POST | `/identite/inscription` | public | Inscription (email + mot de passe + `role`) → renvoie un **jeton JWT** |
+| POST | `/identite/connexion` | public | Connexion (email + mot de passe) → renvoie un **jeton JWT** |
 | POST | `/identite/comptes/{id}/blocage` | Admin | Bloquer un compte |
 | GET | `/emploi/annonces` `?domaine=` | public | Lister les annonces |
 | POST | `/emploi/annonces` | Entreprise/Admin | Publier une annonce → `AnnoncePubliee` |
@@ -140,9 +141,10 @@ graph LR
 | 🏢 **Entreprise** | *Compte* → s'inscrire (rôle Entreprise) → *Emploi* : publier une annonce → *Freelance* : publier un AO + sélectionner un lauréat |
 | 🛡️ **Administrateur** | *Compte* → s'inscrire (rôle Administrateur) → *Administration* : publier un article, bloquer un compte |
 
-> L'authentification JWT n'étant pas encore branchée (ADR 0008), le front porte
-> l'« utilisateur courant » et l'injecte dans les requêtes. La page **Compte** permet de
-> se reconnecter avec un identifiant existant pour rejouer un parcours.
+> **Authentification JWT** (ADR 0008) : à l'inscription/connexion, le front reçoit un jeton
+> qu'il joint à chaque requête (en-tête `Bearer`) et à la connexion SignalR. L'identité est
+> dérivée du jeton côté serveur — jamais d'un champ de requête. Les actions exigent un jeton
+> (401 sinon) et respectent la matrice de permissions (403).
 
 ### 2) Flux RSS éditorial (W3C)
 
@@ -158,18 +160,20 @@ Le flux est un **RSS 2.0 valide** (validable sur https://validator.w3.org/feed/)
 
 ```bash
 B=http://localhost:5099
-# Candidat s'abonne au domaine "Cloud Azure"
-CAND=$(curl -s -X POST $B/identite/inscription -H 'Content-Type: application/json' \
-  -d '{"email":"c@test.fr","role":0}' | python3 -c 'import sys,json;print(json.load(sys.stdin)["id"])')
-curl -s -X POST $B/actualite/abonnements -H 'Content-Type: application/json' \
-  -d "{\"utilisateurId\":\"$CAND\",\"domaines\":[\"Cloud Azure\"],\"canal\":0}"
-# Une entreprise publie une annonce dans ce domaine
-ENT=$(curl -s -X POST $B/identite/inscription -H 'Content-Type: application/json' \
-  -d '{"email":"e@test.fr","role":1}' | python3 -c 'import sys,json;print(json.load(sys.stdin)["id"])')
-curl -s -X POST $B/emploi/annonces -H 'Content-Type: application/json' \
-  -d "{\"entrepriseId\":\"$ENT\",\"titre\":\"Ingénieur Cloud\",\"description\":\"...\",\"typeContrat\":0,\"domaineLibelle\":\"Cloud Azure\"}"
-# Le candidat a reçu une notification
-curl -s $B/actualite/notifications/$CAND
+jeton(){ python3 -c 'import sys,json;print(json.load(sys.stdin)["jeton"])'; }
+# Candidat : inscription (renvoie un jeton) puis abonnement au domaine "Cloud Azure"
+TOKC=$(curl -s -X POST $B/identite/inscription -H 'Content-Type: application/json' \
+  -d '{"email":"c@test.fr","motDePasse":"Secret123","role":0}' | jeton)
+curl -s -X POST $B/actualite/abonnements -H "Authorization: Bearer $TOKC" \
+  -H 'Content-Type: application/json' -d '{"domaines":["Cloud Azure"],"canal":0}'
+# Entreprise : inscription puis publication d'une annonce dans ce domaine
+TOKE=$(curl -s -X POST $B/identite/inscription -H 'Content-Type: application/json' \
+  -d '{"email":"e@test.fr","motDePasse":"Secret123","role":1}' | jeton)
+curl -s -X POST $B/emploi/annonces -H "Authorization: Bearer $TOKE" \
+  -H 'Content-Type: application/json' \
+  -d '{"titre":"Ingénieur Cloud","description":"...","typeContrat":0,"domaineLibelle":"Cloud Azure"}'
+# Le candidat lit SES notifications (identité dérivée du jeton)
+curl -s $B/actualite/notifications -H "Authorization: Bearer $TOKC"
 ```
 Dans le navigateur, la même publication fait apparaître un **toast 🔔 en temps réel** côté candidat
 abonné (SignalR), et **uniquement** pour les abonnés du domaine.

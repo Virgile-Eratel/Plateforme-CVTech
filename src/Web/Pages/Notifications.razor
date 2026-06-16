@@ -60,7 +60,7 @@ else
     {
         if (!Session.EstConnecte) return;
         _notifications = null;
-        _notifications = await Api.ListerNotificationsAsync(Session.UtilisateurId!.Value);
+        _notifications = await Api.ListerNotificationsAsync();
     }
 
     // Rafraîchit automatiquement la liste à la réception d'une notification temps réel.

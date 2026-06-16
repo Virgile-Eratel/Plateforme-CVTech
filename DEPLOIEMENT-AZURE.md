@@ -36,6 +36,7 @@ REGION=francecentral            # région Azure
 PREFIXE=cvtech                  # préfixe de nommage des ressources
 SQL_LOGIN=cvtechadmin           # login admin Azure SQL
 SQL_PWD='ChoisirUnMotDePasseFort!2026'   # mot de passe admin (>= 8 car., complexe)
+JWT_CLE='cle-jwt-aleatoire-de-32-caracteres-minimum-xyz'   # clé de signature JWT (ADR 0008)
 ```
 
 ---
@@ -62,7 +63,8 @@ az deployment group create \
   --template-file infra/main.bicep \
   --parameters prefixe="$PREFIXE" \
                adminSqlLogin="$SQL_LOGIN" \
-               adminSqlPassword="$SQL_PWD"
+               adminSqlPassword="$SQL_PWD" \
+               jwtCle="$JWT_CLE"
 ```
 
 Récupérer le **nom** et l'**URL** de l'App Service générés :
@@ -142,8 +144,9 @@ Pipeline → **Edit** → **Variables**, ajoutez :
 | `prefixe` | `cvtech` | non |
 | `adminSqlLogin` | `cvtechadmin` | non |
 | `adminSqlPassword` | `ChoisirUnMotDePasseFort!2026` | **oui** 🔒 |
+| `jwtCle` | chaîne aléatoire ≥ 32 caractères | **oui** 🔒 |
 
-> Cochez le **cadenas** pour `adminSqlPassword` afin qu'il soit masqué dans les logs.
+> Cochez le **cadenas** pour `adminSqlPassword` et `jwtCle` afin qu'ils soient masqués dans les logs.
 
 ### B.5. Créer l'environnement de déploiement
 - Pipelines → **Environments** → **New environment** → nom **`cvtech-production`**
@@ -209,9 +212,10 @@ az group delete --name rg-cvtech --yes --no-wait
 
 ---
 
-## ⚠️ Avant une mise en production réelle
+## 🔐 Sécurité
 
-L'authentification JWT n'est pas encore branchée (ADR 0008) : l'identité est aujourd'hui portée
-par le client. **Avant tout usage réel**, finaliser l'auth (dériver l'identité de `HttpContext.User`)
-et **restreindre le CORS** (actuellement permissif). Tant que ce n'est pas fait, réservez le
-déploiement à une démonstration.
+L'authentification **JWT** est en place (ADR 0008) : l'identité est dérivée du jeton
+(`HttpContext.User`), jamais d'un champ de requête ; les actions exigent un jeton (401 sinon),
+la matrice de permissions renvoie 403, le hub SignalR est authentifié, et le **CORS est restreint**
+aux origines déclarées (`Cors:Origines`). Veillez simplement à fournir une **`jwtCle` forte et secrète**
+(jamais celle de développement) et un mot de passe SQL robuste.

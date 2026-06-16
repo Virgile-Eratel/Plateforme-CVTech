@@ -18,6 +18,7 @@ public sealed class UtilisateurConfiguration : IEntityTypeConfiguration<Utilisat
 
         builder.Property(u => u.Role).HasConversion<string>().HasMaxLength(20).IsRequired();
         builder.Property(u => u.EstBloque).IsRequired();
+        builder.Property(u => u.MotDePasseHash).HasMaxLength(256);
 
         // Les événements d'intégration ne sont pas persistés (transient, publiés sur le bus).
         builder.Ignore(u => u.EvenementsNonPublies);

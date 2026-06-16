@@ -27,6 +27,9 @@ public static class GestionIdentiteLoader
         services.AddDbContext<IdentiteDbContext>(configurerBdd);
         services.AddScoped<IDepotUtilisateurs, DepotUtilisateursEfCore>();
 
+        // Hachage des mots de passe (ASP.NET Core Identity, ADR 0008).
+        services.AddSingleton<IHacheurMotDePasse, HacheurMotDePasseIdentity>();
+
         // Contrat public consommé par les autres modules.
         services.AddScoped<IVerificateurPermission, VerificateurPermission>();
 

@@ -7,5 +7,6 @@ public interface IDepotUtilisateurs
 {
     Task AjouterAsync(Utilisateur utilisateur, CancellationToken ct = default);
     Task<Utilisateur?> ObtenirAsync(Guid id, CancellationToken ct = default);
+    Task<Utilisateur?> ObtenirParEmailAsync(string email, CancellationToken ct = default);
     Task EnregistrerAsync(CancellationToken ct = default);
 }

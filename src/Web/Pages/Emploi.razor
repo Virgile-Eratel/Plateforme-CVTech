@@ -138,7 +138,7 @@ else
         _occupe = true;
         try
         {
-            await Api.PublierAnnonceAsync(Session.UtilisateurId!.Value, _titre, _description, _typeContrat, _domainePublication);
+            await Api.PublierAnnonceAsync(_titre, _description, _typeContrat, _domainePublication);
             Avertir($"Annonce « {_titre} » publiée dans le domaine « {_domainePublication} ».", "ok");
             _titre = _description = ""; _domainePublication = "";
             await Charger();
@@ -153,7 +153,7 @@ else
         try
         {
             var competences = _competences.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-            await Api.ConstituerCvAsync(Session.UtilisateurId!.Value, _presentation, competences);
+            await Api.ConstituerCvAsync(_presentation, competences);
             Avertir("CV enregistré.", "ok");
         }
         catch (ApiException ex) { Avertir(ex.Message, "erreur"); }
@@ -165,7 +165,7 @@ else
         _occupe = true;
         try
         {
-            await Api.PostulerAsync(Session.UtilisateurId!.Value, annonceId, string.IsNullOrWhiteSpace(_lettre) ? null : _lettre);
+            await Api.PostulerAsync(annonceId, string.IsNullOrWhiteSpace(_lettre) ? null : _lettre);
             Avertir("Candidature envoyée.", "ok");
             _annonceEnCandidature = null; _lettre = "";
         }
