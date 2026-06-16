@@ -17,7 +17,24 @@ public sealed class Utilisateur : RacineAgregat<Guid>
 
     private Utilisateur() { } // pour la reconstitution par l'infrastructure
 
+    /// <summary>
+    /// Auto-inscription publique. Sécurité : un compte administrateur ne peut jamais être
+    /// obtenu par ce parcours — seul le provisionnement administratif (<see cref="Creer"/>)
+    /// le permet.
+    /// </summary>
     public static Utilisateur Inscrire(string email, RoleUtilisateur role)
+    {
+        if (role == RoleUtilisateur.Administrateur)
+            throw new RoleInscriptionInterditException(role);
+
+        return Creer(email, role);
+    }
+
+    /// <summary>
+    /// Provisionnement d'un compte par l'administration (seeding, parcours privilégié),
+    /// hors du parcours d'inscription public : tout rôle est autorisé.
+    /// </summary>
+    public static Utilisateur Creer(string email, RoleUtilisateur role)
     {
         if (!EstEmailValide(email))
             throw new EmailInvalideException(email ?? string.Empty);

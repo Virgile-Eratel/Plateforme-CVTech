@@ -73,9 +73,11 @@ DomaineMetier UnDomaine() => DomaineMetier.Creer(faker.PickRandom(Catalogues.Dom
 // =========================================================================================
 // 1) IDENTITÉ — 1 admin + 15 entreprises + 40 candidats (comptes de démo déterministes)
 // =========================================================================================
+// Provisionnement administratif : Creer autorise tout rôle (dont Administrateur),
+// contrairement à l'inscription publique qui refuse Administrateur.
 Utilisateur Compte(string email, RoleUtilisateur role)
 {
-    var u = Utilisateur.Inscrire(email, role);
+    var u = Utilisateur.Creer(email, role);
     u.DefinirMotDePasse(hashDemo);
     return u;
 }

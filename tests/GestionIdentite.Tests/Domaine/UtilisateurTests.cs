@@ -56,10 +56,37 @@ public class UtilisateurTests
     [Fact]
     public void UnAdministrateurNePeutPasÊtreBloqué()
     {
-        var admin = Utilisateur.Inscrire("admin@cvtech.fr", RoleUtilisateur.Administrateur);
+        var admin = Utilisateur.Creer("admin@cvtech.fr", RoleUtilisateur.Administrateur);
 
         Action blocage = () => admin.Bloquer();
 
         blocage.Should().Throw<InvalidOperationException>();
+    }
+
+    [Fact]
+    public void UnCompteAdministrateurNePeutPasÊtreCrééParInscriptionPublique()
+    {
+        Action inscription = () => Utilisateur.Inscrire("admin@cvtech.fr", RoleUtilisateur.Administrateur);
+
+        inscription.Should().Throw<RoleInscriptionInterditException>();
+    }
+
+    [Theory]
+    [InlineData(RoleUtilisateur.Candidat)]
+    [InlineData(RoleUtilisateur.Entreprise)]
+    public void LinscriptionPubliqueAccepteLesRôlesCandidatEtEntreprise(RoleUtilisateur role)
+    {
+        var utilisateur = Utilisateur.Inscrire("nouveau@cvtech.fr", role);
+
+        utilisateur.Role.Should().Be(role);
+    }
+
+    [Fact]
+    public void LeProvisionnementAdministratifPeutCréerUnAdministrateur()
+    {
+        var admin = Utilisateur.Creer("admin@cvtech.fr", RoleUtilisateur.Administrateur);
+
+        admin.Role.Should().Be(RoleUtilisateur.Administrateur);
+        admin.EstBloque.Should().BeFalse();
     }
 }

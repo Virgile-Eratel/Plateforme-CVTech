@@ -23,14 +23,22 @@ public static class GestionIdentiteEndpoints
         var groupe = routes.MapGroup("/identite").WithTags("GestionIdentite");
 
         // Inscription : action publique. Renvoie immédiatement un jeton (auto-connexion).
+        // Sécurité : impossible de s'auto-attribuer le rôle Administrateur → 403.
         groupe.MapPost("/inscription", async (
             InscriptionRequete requete, ISender sender, IGenerateurJeton jetons) =>
         {
-            var id = await sender.Send(
-                new InscrireUtilisateurCommand(requete.Email, requete.MotDePasse, requete.Role));
-            var jeton = jetons.Generer(id, requete.Email, requete.Role.ToString());
-            return Results.Created($"/identite/comptes/{id}",
-                new SessionReponse(id, requete.Email, requete.Role.ToString(), jeton));
+            try
+            {
+                var id = await sender.Send(
+                    new InscrireUtilisateurCommand(requete.Email, requete.MotDePasse, requete.Role));
+                var jeton = jetons.Generer(id, requete.Email, requete.Role.ToString());
+                return Results.Created($"/identite/comptes/{id}",
+                    new SessionReponse(id, requete.Email, requete.Role.ToString(), jeton));
+            }
+            catch (RoleInscriptionInterditException ex)
+            {
+                return Results.Problem(ex.Message, statusCode: StatusCodes.Status403Forbidden);
+            }
         });
 
         // Connexion : action publique. 401 si identifiants invalides ou compte bloqué.
