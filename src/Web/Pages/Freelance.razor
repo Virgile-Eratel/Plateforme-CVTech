@@ -159,8 +159,12 @@ else
         _occupe = true;
         try
         {
+            // _deadline vient d'un <input type="date"> (Kind=Local) : construire un DateTimeOffset
+            // avec offset zéro sur un DateTime Local lève Argument_OffsetLocalMismatch hors UTC.
+            // On traite la date choisie comme un jour calendaire ancré à minuit UTC.
+            var deadlineUtc = new DateTimeOffset(DateTime.SpecifyKind(_deadline, DateTimeKind.Unspecified), TimeSpan.Zero);
             await Api.PublierAppelOffreAsync(_titre, _contexte, _livrables,
-                new DateTimeOffset(_deadline, TimeSpan.Zero), _budgetMin, _budgetMax, _domainePublication);
+                deadlineUtc, _budgetMin, _budgetMax, _domainePublication);
             Avertir($"Appel d'offre « {_titre} » publié dans le domaine « {_domainePublication} ».", "ok");
             _titre = _contexte = _livrables = ""; _domainePublication = "";
             await Charger();
