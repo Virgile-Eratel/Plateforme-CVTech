@@ -71,7 +71,7 @@
         try
         {
             var s = await Api.InscrireAsync(_emailInscription.Trim(), _mdpInscription, _role);
-            OuvrirSession(s);
+            await OuvrirSession(s);
             Avertir($"Compte créé — connecté en tant que {s.Role}.", "ok");
         }
         catch (ApiException ex) { Avertir(ex.Message, "erreur"); }
@@ -84,23 +84,23 @@
         try
         {
             var s = await Api.ConnecterAsync(_emailConnexion.Trim(), _mdpConnexion);
-            OuvrirSession(s);
+            await OuvrirSession(s);
             Avertir($"Connecté en tant que {s.Role}.", "ok");
         }
         catch (ApiException ex) { Avertir(ex.Message, "erreur"); }
         finally { _occupe = false; }
     }
 
-    private void OuvrirSession(SessionReponse s)
+    private async Task OuvrirSession(SessionReponse s)
     {
         var role = Enum.Parse<RoleUtilisateur>(s.Role);
-        Session.Ouvrir(s.Id, s.Email, role, s.Jeton);
+        await Session.OuvrirAsync(s.Id, s.Email, role, s.Jeton);
         _mdpInscription = _mdpConnexion = "";
     }
 
-    private void Deconnecter()
+    private async Task Deconnecter()
     {
-        Session.Fermer();
+        await Session.FermerAsync();
         Avertir("Déconnecté.", "info");
     }
 

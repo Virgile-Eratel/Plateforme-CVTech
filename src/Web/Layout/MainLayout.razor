@@ -2,8 +2,17 @@
 @inject SessionUtilisateur Session
 @implements IDisposable
 
+@if (!Session.EstRestauree)
+{
+    <div class="ecran-chargement"><span class="logo">CV</span> Chargement…</div>
+}
+else
+{
 <div class="barre">
-    <a href="" class="marque">💼 Plateforme-CVTech</a>
+    <a href="" class="marque">
+        <span class="logo">CV</span>
+        <span class="mot"><b>Plateforme</b>·<span>CVTech</span></span>
+    </a>
     <NavMenu />
     <div class="pousse"></div>
     @if (Session.EstConnecte)
@@ -24,8 +33,63 @@
     @Body
 </main>
 
+<footer class="pied">
+    <div class="pied-grille">
+        <div>
+            <span class="pied-marque"><span class="logo">CV</span> Plateforme-CVTech</span>
+            <p class="pied-tagline">
+                Une seule identité, un seul CV : job board permanent, marketplace freelance
+                et veille tech réunis au même endroit.
+            </p>
+        </div>
+        <div class="pied-col">
+            <h4>Plateforme</h4>
+            <ul>
+                <li><a href="emploi">Emploi</a></li>
+                <li><a href="freelance">Freelance</a></li>
+                <li><a href="actualite">Actualité &amp; RSS</a></li>
+            </ul>
+        </div>
+        <div class="pied-col">
+            <h4>Mon compte</h4>
+            <ul>
+                <li><a href="compte">Se connecter</a></li>
+                <li><a href="compte">Créer un compte</a></li>
+                @if (Session.EstConnecte)
+                {
+                    <li><a href="notifications">Mes notifications</a></li>
+                }
+            </ul>
+        </div>
+        <div class="pied-col">
+            <h4>Ressources</h4>
+            <ul>
+                <li><a href="/feed/rss" target="_blank">Flux RSS</a></li>
+                @if (Session.EstAdmin)
+                {
+                    <li><a href="administration">Administration</a></li>
+                }
+            </ul>
+        </div>
+    </div>
+    <div class="pied-bas">
+        <div class="pied-bas-inner">
+            <span>© @DateTime.Now.Year Plateforme-CVTech</span>
+            <span>Projet pédagogique — monolithe modulaire .NET</span>
+            <span class="sep">Flux public sur <code>/feed/rss</code></span>
+        </div>
+    </div>
+</footer>
+}
+
 @code {
-    protected override void OnInitialized() => Session.AuChangement += Rafraichir;
+    protected override async Task OnInitializedAsync()
+    {
+        Session.AuChangement += Rafraichir;
+        // Restaure le jeton JWT depuis le localStorage : la session survit à un rechargement (F5).
+        await Session.RestaurerAsync();
+    }
+
     public void Dispose() => Session.AuChangement -= Rafraichir;
     private void Rafraichir() => InvokeAsync(StateHasChanged);
 }

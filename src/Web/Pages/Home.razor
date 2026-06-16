@@ -1,8 +1,21 @@
 @page "/"
 @inject SessionUtilisateur Session
 
-<h1>Plateforme-CVTech</h1>
-<p class="muet">Une seule identité, un seul CV : job board permanent, marketplace freelance et fil d'actualité tech.</p>
+<section class="hero">
+    <p class="hero-eyebrow">Plateforme carrière tech</p>
+    <h1 class="hero-titre">Une seule identité, <span>un seul CV.</span></h1>
+    <p class="hero-sous">
+        Job board permanent, marketplace freelance et fil d'actualité tech — réunis derrière
+        une identité unique portée par votre jeton.
+    </p>
+    <div class="hero-actions">
+        <a href="emploi"><button>Voir les annonces</button></a>
+        @if (!Session.EstConnecte)
+        {
+            <a href="compte"><button class="secondaire">Créer un compte</button></a>
+        }
+    </div>
+</section>
 
 @if (Session.EstConnecte)
 {
