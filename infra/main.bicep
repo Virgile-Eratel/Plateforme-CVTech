@@ -94,6 +94,10 @@ resource app 'Microsoft.Web/sites@2023-12-01' = {
     httpsOnly: true
     siteConfig: {
       linuxFxVersion: 'DOTNETCORE|10.0'
+      // Le paquet contient plusieurs DLL (API + modules) : sans commande de démarrage
+      // explicite, App Service ne sait pas quel point d'entrée lancer et affiche la page
+      // par défaut « hostingstart ». On force le lancement de l'API.
+      appCommandLine: 'dotnet CVTech.Api.dll'
       alwaysOn: alwaysOnActif
       ftpsState: 'Disabled'
       // Bascule la persistance sur Azure SQL : les migrations EF s'appliquent au démarrage.
