@@ -1,0 +1,177 @@
+@page "/emploi"
+@inject ApiClient Api
+@inject SessionUtilisateur Session
+
+<h1>Emploi — annonces &amp; candidatures</h1>
+
+@if (_message is not null)
+{
+    <div class="alerte @_classe">@_message</div>
+}
+
+@* --- Publication (Entreprise / Administrateur) --- *@
+@if (PeutPublier)
+{
+    <div class="carte">
+        <h3>Publier une annonce</h3>
+        <label>Titre</label>
+        <input @bind="_titre" />
+        <label>Description</label>
+        <textarea @bind="_description"></textarea>
+        <div class="grille">
+            <div>
+                <label>Type de contrat</label>
+                <select @bind="_typeContrat">
+                    @foreach (var t in Enum.GetValues<TypeContrat>())
+                    {
+                        <option value="@t">@t</option>
+                    }
+                </select>
+            </div>
+            <div>
+                <label>Domaine métier</label>
+                <input @bind="_domainePublication" placeholder="ex : Cloud Azure" />
+            </div>
+        </div>
+        <br />
+        <button @onclick="Publier" disabled="@_occupe">Publier l'annonce</button>
+    </div>
+}
+
+@* --- CV (Candidat / Administrateur) --- *@
+@if (PeutGererCv)
+{
+    <div class="carte">
+        <h3>Constituer mon CV</h3>
+        <label>Présentation</label>
+        <textarea @bind="_presentation"></textarea>
+        <label>Compétences (séparées par des virgules)</label>
+        <input @bind="_competences" placeholder="C#, Azure, Terraform" />
+        <br /><br />
+        <button @onclick="ConstituerCv" disabled="@_occupe">Enregistrer mon CV</button>
+    </div>
+}
+
+@* --- Consultation publique --- *@
+<div class="carte">
+    <h3>Annonces publiées</h3>
+    <div style="display:flex; gap:.5rem; align-items:flex-end;">
+        <div style="flex:1">
+            <label>Filtrer par domaine (optionnel)</label>
+            <input @bind="_filtre" placeholder="ex : Cloud Azure" />
+        </div>
+        <button class="secondaire" @onclick="Charger">Filtrer</button>
+    </div>
+</div>
+
+@if (_annonces is null)
+{
+    <p class="muet">Chargement…</p>
+}
+else if (_annonces.Count == 0)
+{
+    <p class="muet">Aucune annonce pour l'instant.</p>
+}
+else
+{
+    @foreach (var a in _annonces)
+    {
+        <div class="carte">
+            <h3>@a.Titre</h3>
+            <div class="pills">
+                <span class="pill">@a.TypeContrat</span>
+                <span class="pill">@a.Domaine</span>
+                <span class="pill">@a.DatePublication.ToString("dd/MM/yyyy")</span>
+            </div>
+            <p>@a.Description</p>
+
+            @if (Session.A(RoleUtilisateur.Candidat))
+            {
+                @if (_annonceEnCandidature == a.Id)
+                {
+                    <label>Lettre de motivation (optionnelle)</label>
+                    <textarea @bind="_lettre"></textarea>
+                    <button class="petit" @onclick="() => Postuler(a.Id)" disabled="@_occupe">Envoyer ma candidature</button>
+                    <button class="petit secondaire" @onclick="() => _annonceEnCandidature = null">Annuler</button>
+                }
+                else
+                {
+                    <button class="petit" @onclick="() => _annonceEnCandidature = a.Id">Postuler</button>
+                }
+            }
+        </div>
+    }
+}
+
+@code {
+    private IReadOnlyList<AnnonceVue>? _annonces;
+    private string _filtre = "";
+
+    // Publication
+    private string _titre = "", _description = "", _domainePublication = "";
+    private TypeContrat _typeContrat = TypeContrat.CDI;
+
+    // CV
+    private string _presentation = "", _competences = "";
+
+    // Candidature
+    private Guid? _annonceEnCandidature;
+    private string _lettre = "";
+
+    private bool _occupe;
+    private string? _message;
+    private string _classe = "info";
+
+    private bool PeutPublier => Session.A(RoleUtilisateur.Entreprise) || Session.EstAdmin;
+    private bool PeutGererCv => Session.A(RoleUtilisateur.Candidat) || Session.EstAdmin;
+
+    protected override async Task OnInitializedAsync() => await Charger();
+
+    private async Task Charger()
+    {
+        _annonces = null;
+        _annonces = await Api.ListerAnnoncesAsync(_filtre);
+    }
+
+    private async Task Publier()
+    {
+        _occupe = true;
+        try
+        {
+            await Api.PublierAnnonceAsync(Session.UtilisateurId!.Value, _titre, _description, _typeContrat, _domainePublication);
+            Avertir($"Annonce « {_titre} » publiée dans le domaine « {_domainePublication} ».", "ok");
+            _titre = _description = ""; _domainePublication = "";
+            await Charger();
+        }
+        catch (ApiException ex) { Avertir(ex.Message, "erreur"); }
+        finally { _occupe = false; }
+    }
+
+    private async Task ConstituerCv()
+    {
+        _occupe = true;
+        try
+        {
+            var competences = _competences.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            await Api.ConstituerCvAsync(Session.UtilisateurId!.Value, _presentation, competences);
+            Avertir("CV enregistré.", "ok");
+        }
+        catch (ApiException ex) { Avertir(ex.Message, "erreur"); }
+        finally { _occupe = false; }
+    }
+
+    private async Task Postuler(Guid annonceId)
+    {
+        _occupe = true;
+        try
+        {
+            await Api.PostulerAsync(Session.UtilisateurId!.Value, annonceId, string.IsNullOrWhiteSpace(_lettre) ? null : _lettre);
+            Avertir("Candidature envoyée.", "ok");
+            _annonceEnCandidature = null; _lettre = "";
+        }
+        catch (ApiException ex) { Avertir(ex.Message, "erreur"); }
+        finally { _occupe = false; }
+    }
+
+    private void Avertir(string m, string c) { _message = m; _classe = c; }
+}

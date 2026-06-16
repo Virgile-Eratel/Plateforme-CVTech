@@ -1,0 +1,69 @@
+@page "/"
+@inject SessionUtilisateur Session
+
+<h1>Plateforme-CVTech</h1>
+<p class="muet">Une seule identité, un seul CV : job board permanent, marketplace freelance et fil d'actualité tech.</p>
+
+@if (Session.EstConnecte)
+{
+    <div class="alerte info">
+        Connecté en tant que <strong>@Session.Email</strong>
+        (<span class="badge-role role-@Session.Role">@Session.Role</span>).
+    </div>
+}
+else
+{
+    <div class="alerte info">
+        Commencez par <a href="compte">créer un compte</a> (Candidat, Entreprise ou Administrateur)
+        pour accéder aux actions de votre parcours. La consultation des annonces, des appels d'offre
+        et du flux RSS reste publique.
+    </div>
+}
+
+<div class="grille">
+    <div class="carte">
+        <h3>👤 Parcours Candidat</h3>
+        <ul>
+            <li>Constituer son CV</li>
+            <li>Postuler à une annonce d'emploi</li>
+            <li>Soumettre une proposition freelance</li>
+            <li>S'abonner à des domaines &amp; recevoir des notifications</li>
+        </ul>
+        <a href="emploi">Voir les annonces →</a>
+    </div>
+    <div class="carte">
+        <h3>🏢 Parcours Entreprise</h3>
+        <ul>
+            <li>Publier une annonce d'emploi</li>
+            <li>Publier un appel d'offre freelance</li>
+            <li>Sélectionner un lauréat</li>
+            <li>Veille par abonnement à des domaines</li>
+        </ul>
+        <a href="freelance">Voir les appels d'offre →</a>
+    </div>
+    <div class="carte">
+        <h3>🛡️ Parcours Administrateur</h3>
+        <ul>
+            <li>Publier des articles du fil d'actualité</li>
+            <li>Bloquer / réactiver un compte</li>
+            <li>Hérite de tous les droits</li>
+        </ul>
+        <a href="administration">Console d'administration →</a>
+    </div>
+</div>
+
+<h2>Flux temps réel &amp; RSS</h2>
+<div class="grille">
+    <div class="carte">
+        <h3>🔔 Notifications par domaine</h3>
+        <p class="muet">Abonnez-vous à un domaine : une notification temps réel (SignalR) arrive dès
+        qu'une annonce ou un appel d'offre y est publié.</p>
+        <a href="actualite">Gérer mes abonnements →</a>
+    </div>
+    <div class="carte">
+        <h3>📰 Flux RSS éditorial</h3>
+        <p class="muet">Le fil d'actualité est exposé en RSS 2.0 public sur <code>/feed/rss</code>
+        (articles éditoriaux uniquement, jamais d'annonces).</p>
+        <a href="actualite">Consulter le fil →</a>
+    </div>
+</div>

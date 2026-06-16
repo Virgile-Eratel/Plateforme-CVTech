@@ -35,6 +35,9 @@
   <Folder Name="/src/SharedKernel/">
     <Project Path="src/SharedKernel/CVTech.SharedKernel.csproj" />
   </Folder>
+  <Folder Name="/src/Web/">
+    <Project Path="src/Web/CVTech.Web.csproj" />
+  </Folder>
   <Folder Name="/tests/" />
   <Folder Name="/tests/ActualiteEtAbonnement.Tests/">
     <Project Path="tests/ActualiteEtAbonnement.Tests/CVTech.Modules.ActualiteEtAbonnement.Tests.csproj" />

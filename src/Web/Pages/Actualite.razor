@@ -1,0 +1,88 @@
+@page "/actualite"
+@inject ApiClient Api
+@inject SessionUtilisateur Session
+@inject NavigationManager Nav
+
+<h1>Actualité — flux RSS &amp; abonnements</h1>
+
+@if (_message is not null)
+{
+    <div class="alerte @_classe">@_message</div>
+}
+
+@* --- Abonnements (utilisateur connecté) --- *@
+@if (Session.EstConnecte)
+{
+    <div class="carte">
+        <h3>🔔 M'abonner à des domaines métier</h3>
+        <p class="muet">Recevez une notification dès qu'une annonce ou un appel d'offre est publié dans ces domaines.</p>
+        <label>Domaines (séparés par des virgules)</label>
+        <input @bind="_domaines" placeholder="Cloud Azure, Data Science" />
+        <label>Canal</label>
+        <select @bind="_canal">
+            <option value="@CanalDiffusion.InApp">In-app (temps réel)</option>
+            <option value="@CanalDiffusion.Email">Email</option>
+        </select>
+        <br /><br />
+        <button @onclick="SAbonner" disabled="@_occupe">Valider mes abonnements</button>
+    </div>
+}
+else
+{
+    <div class="alerte info">Connectez-vous pour gérer vos abonnements et recevoir des notifications.</div>
+}
+
+@* --- Flux RSS public --- *@
+<div class="carte">
+    <h3>📰 Flux RSS éditorial (public)</h3>
+    <p class="muet">RSS 2.0 anonyme, articles éditoriaux uniquement. Endpoint : <code>/feed/rss</code></p>
+    <div style="display:flex; gap:.5rem; align-items:flex-end;">
+        <div style="flex:1">
+            <label>Filtrer par domaine (optionnel)</label>
+            <input @bind="_domaineRss" placeholder="ex : Cloud Azure" />
+        </div>
+        <button class="secondaire" @onclick="ChargerRss">Charger le flux</button>
+        <a class="chip" href="@UrlRss" target="_blank">Ouvrir dans un onglet ↗</a>
+    </div>
+    @if (_rss is not null)
+    {
+        <pre style="background:#0f172a; color:#e2e8f0; padding:1rem; border-radius:.5rem; overflow:auto; max-height:420px; font-size:.8rem;">@_rss</pre>
+    }
+</div>
+
+@code {
+    private string _domaines = "";
+    private CanalDiffusion _canal = CanalDiffusion.InApp;
+
+    private string _domaineRss = "";
+    private string? _rss;
+
+    private bool _occupe;
+    private string? _message;
+    private string _classe = "info";
+
+    private string UrlRss => Nav.ToAbsoluteUri(
+        string.IsNullOrWhiteSpace(_domaineRss) ? "/feed/rss" : $"/feed/rss?domaine={Uri.EscapeDataString(_domaineRss)}").ToString();
+
+    private async Task SAbonner()
+    {
+        var domaines = _domaines.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        if (domaines.Length == 0) { Avertir("Indiquez au moins un domaine.", "erreur"); return; }
+        _occupe = true;
+        try
+        {
+            await Api.SAbonnerAsync(Session.UtilisateurId!.Value, domaines, _canal);
+            Avertir($"Abonnement enregistré sur : {string.Join(", ", domaines)} (canal {_canal}).", "ok");
+        }
+        catch (ApiException ex) { Avertir(ex.Message, "erreur"); }
+        finally { _occupe = false; }
+    }
+
+    private async Task ChargerRss()
+    {
+        try { _rss = await Api.ObtenirFluxRssAsync(_domaineRss); }
+        catch (Exception ex) { Avertir(ex.Message, "erreur"); }
+    }
+
+    private void Avertir(string m, string c) { _message = m; _classe = c; }
+}

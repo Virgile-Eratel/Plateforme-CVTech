@@ -1,0 +1,104 @@
+@page "/administration"
+@inject ApiClient Api
+@inject SessionUtilisateur Session
+
+<h1>Console d'administration</h1>
+
+@if (!Session.EstAdmin)
+{
+    <div class="alerte info">
+        Réservé aux administrateurs. Connectez-vous avec un compte Administrateur depuis la page
+        <a href="compte">Compte</a>.
+    </div>
+}
+else
+{
+    @if (_message is not null)
+    {
+        <div class="alerte @_classe">@_message</div>
+    }
+
+    <div class="carte">
+        <h3>📰 Publier un article du fil d'actualité</h3>
+        <label>Titre</label>
+        <input @bind="_titre" />
+        <label>Contenu</label>
+        <textarea @bind="_contenu"></textarea>
+        <div class="grille">
+            <div>
+                <label>Catégorie éditoriale</label>
+                <select @bind="_categorie">
+                    @foreach (var c in Enum.GetValues<CategorieEditoriale>())
+                    {
+                        <option value="@c">@c</option>
+                    }
+                </select>
+            </div>
+            <div>
+                <label>Domaine métier (optionnel)</label>
+                <input @bind="_domaine" placeholder="ex : Cloud Azure" />
+            </div>
+        </div>
+        <div class="grille">
+            <div>
+                <label>Source — nom (optionnel)</label>
+                <input @bind="_sourceNom" placeholder="ex : Korben" />
+            </div>
+            <div>
+                <label>Source — URL (optionnel)</label>
+                <input @bind="_sourceUrl" placeholder="https://…" />
+            </div>
+        </div>
+        <br />
+        <button @onclick="PublierArticle" disabled="@_occupe">Publier l'article</button>
+    </div>
+
+    <div class="carte">
+        <h3>🚫 Bloquer un compte</h3>
+        <label>Identifiant du compte cible (GUID)</label>
+        <input @bind="_cible" placeholder="00000000-0000-0000-0000-000000000000" />
+        <br /><br />
+        <button @onclick="Bloquer" disabled="@_occupe">Bloquer le compte</button>
+    </div>
+}
+
+@code {
+    private string _titre = "", _contenu = "", _domaine = "", _sourceNom = "", _sourceUrl = "";
+    private CategorieEditoriale _categorie = CategorieEditoriale.TendancesRecrutement;
+    private string _cible = "";
+
+    private bool _occupe;
+    private string? _message;
+    private string _classe = "info";
+
+    private async Task PublierArticle()
+    {
+        _occupe = true;
+        try
+        {
+            await Api.PublierArticleAsync(Session.UtilisateurId!.Value, _titre, _contenu, _categorie,
+                Vide(_domaine), Vide(_sourceNom), Vide(_sourceUrl));
+            Avertir($"Article « {_titre} » publié — visible dans le flux RSS.", "ok");
+            _titre = _contenu = ""; _domaine = _sourceNom = _sourceUrl = "";
+        }
+        catch (ApiException ex) { Avertir(ex.Message, "erreur"); }
+        finally { _occupe = false; }
+    }
+
+    private async Task Bloquer()
+    {
+        if (!Guid.TryParse(_cible, out var cible)) { Avertir("Identifiant GUID invalide.", "erreur"); return; }
+        _occupe = true;
+        try
+        {
+            await Api.BloquerCompteAsync(Session.UtilisateurId!.Value, cible);
+            Avertir($"Compte {cible} bloqué.", "ok");
+            _cible = "";
+        }
+        catch (ApiException ex) { Avertir(ex.Message, "erreur"); }
+        finally { _occupe = false; }
+    }
+
+    private static string? Vide(string s) => string.IsNullOrWhiteSpace(s) ? null : s.Trim();
+    private void Avertir(string m, string c) { _message = m; _classe = c; }
+}

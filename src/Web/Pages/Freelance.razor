@@ -1,0 +1,205 @@
+@page "/freelance"
+@inject ApiClient Api
+@inject SessionUtilisateur Session
+
+<h1>Freelance — appels d'offre &amp; propositions</h1>
+
+@if (_message is not null)
+{
+    <div class="alerte @_classe">@_message</div>
+}
+
+@* --- Publication (Entreprise / Administrateur) --- *@
+@if (PeutPublier)
+{
+    <div class="carte">
+        <h3>Publier un appel d'offre</h3>
+        <label>Titre</label>
+        <input @bind="_titre" />
+        <label>Contexte</label>
+        <textarea @bind="_contexte"></textarea>
+        <label>Livrables attendus</label>
+        <textarea @bind="_livrables"></textarea>
+        <div class="grille">
+            <div>
+                <label>Deadline</label>
+                <input type="date" @bind="_deadline" />
+            </div>
+            <div>
+                <label>Budget min (€)</label>
+                <input type="number" @bind="_budgetMin" />
+            </div>
+            <div>
+                <label>Budget max (€)</label>
+                <input type="number" @bind="_budgetMax" />
+            </div>
+            <div>
+                <label>Domaine métier</label>
+                <input @bind="_domainePublication" placeholder="ex : Data Science" />
+            </div>
+        </div>
+        <br />
+        <button @onclick="Publier" disabled="@_occupe">Publier l'appel d'offre</button>
+    </div>
+}
+
+@* --- Sélection du lauréat (Entreprise propriétaire / Administrateur) --- *@
+@if (PeutPublier)
+{
+    <div class="carte">
+        <h3>Sélectionner un lauréat</h3>
+        <p class="muet">Renseignez l'identifiant de la proposition retenue (renvoyé au candidat lors de sa soumission).</p>
+        <div class="grille">
+            <div>
+                <label>Identifiant de l'appel d'offre</label>
+                <input @bind="_aoLaureat" placeholder="GUID de l'AO" />
+            </div>
+            <div>
+                <label>Identifiant de la proposition retenue</label>
+                <input @bind="_propositionLaureat" placeholder="GUID de la proposition" />
+            </div>
+        </div>
+        <br />
+        <button @onclick="SelectionnerLaureat" disabled="@_occupe">Désigner le lauréat</button>
+    </div>
+}
+
+@* --- Consultation publique --- *@
+<div class="carte">
+    <h3>Appels d'offre publiés</h3>
+    <div style="display:flex; gap:.5rem; align-items:flex-end;">
+        <div style="flex:1">
+            <label>Filtrer par domaine (optionnel)</label>
+            <input @bind="_filtre" placeholder="ex : Data Science" />
+        </div>
+        <button class="secondaire" @onclick="Charger">Filtrer</button>
+    </div>
+</div>
+
+@if (_appels is null)
+{
+    <p class="muet">Chargement…</p>
+}
+else if (_appels.Count == 0)
+{
+    <p class="muet">Aucun appel d'offre pour l'instant.</p>
+}
+else
+{
+    @foreach (var a in _appels)
+    {
+        <div class="carte">
+            <h3>@a.Titre</h3>
+            <div class="pills">
+                <span class="pill">@a.Domaine</span>
+                <span class="pill">@a.Statut</span>
+                <span class="pill">@a.BudgetMin.ToString("0") – @a.BudgetMax.ToString("0") €</span>
+                <span class="pill">échéance @a.Deadline.ToString("dd/MM/yyyy")</span>
+            </div>
+            <p><strong>Contexte.</strong> @a.Contexte</p>
+            <p><strong>Livrables.</strong> @a.Livrables</p>
+            <p class="muet">Identifiant : <code>@a.Id</code></p>
+
+            @if (Session.A(RoleUtilisateur.Candidat))
+            {
+                @if (_aoEnProposition == a.Id)
+                {
+                    <div class="grille">
+                        <div><label>TJM (€)</label><input type="number" @bind="_tjm" /></div>
+                        <div><label>Durée (jours)</label><input type="number" @bind="_duree" /></div>
+                    </div>
+                    <label>Méthodologie</label>
+                    <textarea @bind="_methodologie"></textarea>
+                    <button class="petit" @onclick="() => Soumettre(a.Id)" disabled="@_occupe">Soumettre ma proposition</button>
+                    <button class="petit secondaire" @onclick="() => _aoEnProposition = null">Annuler</button>
+                }
+                else
+                {
+                    <button class="petit" @onclick="() => _aoEnProposition = a.Id">Proposer une mission</button>
+                }
+            }
+        </div>
+    }
+}
+
+@code {
+    private IReadOnlyList<AppelOffreVue>? _appels;
+    private string _filtre = "";
+
+    // Publication
+    private string _titre = "", _contexte = "", _livrables = "", _domainePublication = "";
+    private DateTime _deadline = DateTime.Today.AddMonths(1);
+    private decimal _budgetMin = 5000, _budgetMax = 15000;
+
+    // Proposition
+    private Guid? _aoEnProposition;
+    private decimal _tjm = 500;
+    private int _duree = 20;
+    private string _methodologie = "";
+
+    // Lauréat
+    private string _aoLaureat = "", _propositionLaureat = "";
+
+    private bool _occupe;
+    private string? _message;
+    private string _classe = "info";
+
+    private bool PeutPublier => Session.A(RoleUtilisateur.Entreprise) || Session.EstAdmin;
+
+    protected override async Task OnInitializedAsync() => await Charger();
+
+    private async Task Charger()
+    {
+        _appels = null;
+        _appels = await Api.ListerAppelsOffreAsync(_filtre);
+    }
+
+    private async Task Publier()
+    {
+        _occupe = true;
+        try
+        {
+            await Api.PublierAppelOffreAsync(Session.UtilisateurId!.Value, _titre, _contexte, _livrables,
+                new DateTimeOffset(_deadline, TimeSpan.Zero), _budgetMin, _budgetMax, _domainePublication);
+            Avertir($"Appel d'offre « {_titre} » publié dans le domaine « {_domainePublication} ».", "ok");
+            _titre = _contexte = _livrables = ""; _domainePublication = "";
+            await Charger();
+        }
+        catch (ApiException ex) { Avertir(ex.Message, "erreur"); }
+        finally { _occupe = false; }
+    }
+
+    private async Task Soumettre(Guid appelOffreId)
+    {
+        _occupe = true;
+        try
+        {
+            var id = await Api.SoumettrePropositionAsync(Session.UtilisateurId!.Value, appelOffreId, _tjm, _duree, _methodologie);
+            Avertir($"Proposition soumise — identifiant {id} (à communiquer à l'entreprise pour la sélection).", "ok");
+            _aoEnProposition = null; _methodologie = "";
+        }
+        catch (ApiException ex) { Avertir(ex.Message, "erreur"); }
+        finally { _occupe = false; }
+    }
+
+    private async Task SelectionnerLaureat()
+    {
+        if (!Guid.TryParse(_aoLaureat, out var ao) || !Guid.TryParse(_propositionLaureat, out var prop))
+        {
+            Avertir("Identifiants GUID invalides.", "erreur");
+            return;
+        }
+        _occupe = true;
+        try
+        {
+            await Api.SelectionnerLaureatAsync(Session.UtilisateurId!.Value, ao, prop);
+            Avertir("Lauréat désigné.", "ok");
+            _aoLaureat = _propositionLaureat = "";
+            await Charger();
+        }
+        catch (ApiException ex) { Avertir(ex.Message, "erreur"); }
+        finally { _occupe = false; }
+    }
+
+    private void Avertir(string m, string c) { _message = m; _classe = c; }
+}

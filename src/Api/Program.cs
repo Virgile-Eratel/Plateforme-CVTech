@@ -51,13 +51,18 @@ if (!EF.IsDesignTime)
 
 app.UseCors();
 
-app.MapGet("/", () => "Plateforme-CVTech — API en ligne.");
+// Sert le front Blazor WebAssembly hébergé dans le même App Service (ADR 0007/0010).
+app.UseBlazorFrameworkFiles();
+app.UseStaticFiles();
 
 // --- Endpoints exposés par chaque module (couche Client) ---
 app.MapGestionIdentite();
 app.MapCatalogueEmploi();
 app.MapAppelOffreFreelance();
 app.MapActualiteEtAbonnement();
+
+// Toute route non-API renvoie l'app Blazor (routage côté client).
+app.MapFallbackToFile("index.html");
 
 app.Run();
 

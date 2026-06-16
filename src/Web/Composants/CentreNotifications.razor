@@ -1,0 +1,39 @@
+@inject ServiceNotifications Notifs
+@implements IDisposable
+
+<button class="cloche" title="Notifications temps réel">
+    🔔
+    @if (Notifs.Recues.Count > 0)
+    {
+        <span class="compteur">@Notifs.Recues.Count</span>
+    }
+</button>
+
+<div class="toasts">
+    @foreach (var t in _toasts)
+    {
+        <div class="toast">
+            <div class="t">🔔 @t.Titre</div>
+            <div class="m">@t.Message</div>
+        </div>
+    }
+</div>
+
+@code {
+    private readonly List<NotificationTempsReel> _toasts = [];
+
+    protected override void OnInitialized() => Notifs.AuMessage += SurMessage;
+
+    private async void SurMessage(NotificationTempsReel n)
+    {
+        _toasts.Add(n);
+        await InvokeAsync(StateHasChanged);
+
+        // Retire le toast après ~6s (la notification reste comptée dans la cloche).
+        await Task.Delay(6000);
+        _toasts.Remove(n);
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose() => Notifs.AuMessage -= SurMessage;
+}

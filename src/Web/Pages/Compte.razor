@@ -1,0 +1,109 @@
+@page "/compte"
+@inject ApiClient Api
+@inject SessionUtilisateur Session
+
+<h1>Compte &amp; parcours</h1>
+<p class="muet">
+    L'authentification JWT n'étant pas encore branchée (ADR 0008), l'identité est portée par le
+    front : inscrivez-vous pour obtenir un identifiant, ou reconnectez-vous avec un identifiant existant
+    pour rejouer un parcours.
+</p>
+
+@if (Session.EstConnecte)
+{
+    <div class="carte">
+        <h3>Session active</h3>
+        <p>
+            <span class="chip">@Session.Email
+                <span class="badge-role role-@Session.Role">@Session.Role</span>
+            </span>
+        </p>
+        <p class="muet">Identifiant : <code>@Session.UtilisateurId</code></p>
+        <button class="secondaire" @onclick="Deconnecter">Se déconnecter</button>
+    </div>
+}
+
+<div class="grille">
+    <div class="carte">
+        <h3>S'inscrire (nouveau compte)</h3>
+        <label>Email</label>
+        <input @bind="_email" placeholder="prenom.nom@exemple.fr" />
+        <label>Rôle</label>
+        <select @bind="_role">
+            <option value="@RoleUtilisateur.Candidat">Candidat</option>
+            <option value="@RoleUtilisateur.Entreprise">Entreprise</option>
+            <option value="@RoleUtilisateur.Administrateur">Administrateur</option>
+        </select>
+        <br /><br />
+        <button @onclick="Inscrire" disabled="@_occupe">S'inscrire et se connecter</button>
+    </div>
+
+    <div class="carte">
+        <h3>Se reconnecter (identifiant existant)</h3>
+        <p class="muet">Pour reprendre un parcours déjà créé (ex. l'entreprise qui a publié une annonce).</p>
+        <label>Identifiant (GUID)</label>
+        <input @bind="_idExistant" placeholder="00000000-0000-0000-0000-000000000000" />
+        <label>Email (affichage)</label>
+        <input @bind="_emailExistant" placeholder="rappel de l'email" />
+        <label>Rôle</label>
+        <select @bind="_roleExistant">
+            <option value="@RoleUtilisateur.Candidat">Candidat</option>
+            <option value="@RoleUtilisateur.Entreprise">Entreprise</option>
+            <option value="@RoleUtilisateur.Administrateur">Administrateur</option>
+        </select>
+        <br /><br />
+        <button class="secondaire" @onclick="Reconnecter">Se reconnecter</button>
+    </div>
+</div>
+
+@if (_message is not null)
+{
+    <div class="alerte @_classeMessage">@_message</div>
+}
+
+@code {
+    private string _email = "";
+    private RoleUtilisateur _role = RoleUtilisateur.Candidat;
+
+    private string _idExistant = "";
+    private string _emailExistant = "";
+    private RoleUtilisateur _roleExistant = RoleUtilisateur.Entreprise;
+
+    private bool _occupe;
+    private string? _message;
+    private string _classeMessage = "info";
+
+    private async Task Inscrire()
+    {
+        if (string.IsNullOrWhiteSpace(_email)) { Avertir("Saisissez un email.", "erreur"); return; }
+        _occupe = true;
+        try
+        {
+            var id = await Api.InscrireAsync(_email.Trim(), _role);
+            Session.Connecter(id, _email.Trim(), _role);
+            Avertir($"Compte créé — identifiant {id}. Vous êtes connecté en tant que {_role}.", "ok");
+        }
+        catch (ApiException ex) { Avertir(ex.Message, "erreur"); }
+        finally { _occupe = false; }
+    }
+
+    private void Reconnecter()
+    {
+        if (!Guid.TryParse(_idExistant, out var id)) { Avertir("Identifiant GUID invalide.", "erreur"); return; }
+        var email = string.IsNullOrWhiteSpace(_emailExistant) ? $"{_roleExistant}" : _emailExistant.Trim();
+        Session.Connecter(id, email, _roleExistant);
+        Avertir($"Reconnecté en tant que {_roleExistant}.", "ok");
+    }
+
+    private void Deconnecter()
+    {
+        Session.Deconnecter();
+        Avertir("Déconnecté.", "info");
+    }
+
+    private void Avertir(string message, string classe)
+    {
+        _message = message;
+        _classeMessage = classe;
+    }
+}

@@ -1,0 +1,24 @@
+@inject SessionUtilisateur Session
+@implements IDisposable
+
+<nav>
+    <NavLink href="" Match="NavLinkMatch.All">Accueil</NavLink>
+    <NavLink href="emploi">Emploi</NavLink>
+    <NavLink href="freelance">Freelance</NavLink>
+    <NavLink href="actualite">Actualité &amp; RSS</NavLink>
+    @if (Session.EstConnecte)
+    {
+        <NavLink href="notifications">Mes notifications</NavLink>
+    }
+    @if (Session.EstAdmin)
+    {
+        <NavLink href="administration">Administration</NavLink>
+    }
+    <NavLink href="compte">Compte</NavLink>
+</nav>
+
+@code {
+    protected override void OnInitialized() => Session.AuChangement += Rafraichir;
+    public void Dispose() => Session.AuChangement -= Rafraichir;
+    private void Rafraichir() => InvokeAsync(StateHasChanged);
+}

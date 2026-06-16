@@ -1,0 +1,70 @@
+@page "/notifications"
+@inject ApiClient Api
+@inject SessionUtilisateur Session
+@inject ServiceNotifications Notifs
+@implements IDisposable
+
+<h1>Mes notifications</h1>
+
+@if (!Session.EstConnecte)
+{
+    <div class="alerte info">Connectez-vous pour consulter vos notifications.</div>
+}
+else
+{
+    <div class="carte">
+        <p class="muet">
+            Connexion temps réel : @(Notifs.EstConnecte ? "✅ active" : "⏳ en cours…")
+            — reçues pendant la session : <strong>@Notifs.Recues.Count</strong>.
+        </p>
+        <button class="secondaire" @onclick="Charger">Rafraîchir depuis l'API</button>
+    </div>
+
+    @if (_notifications is null)
+    {
+        <p class="muet">Chargement…</p>
+    }
+    else if (_notifications.Count == 0)
+    {
+        <p class="muet">Aucune notification. Abonnez-vous à un domaine, puis publiez une annonce dans ce domaine pour en recevoir une.</p>
+    }
+    else
+    {
+        <table>
+            <thead><tr><th>Date</th><th>Titre</th><th>Message</th><th>Lu</th></tr></thead>
+            <tbody>
+            @foreach (var n in _notifications)
+            {
+                <tr>
+                    <td>@n.DateCreation.ToLocalTime().ToString("dd/MM HH:mm")</td>
+                    <td>@n.Titre</td>
+                    <td>@n.Message</td>
+                    <td>@(n.Lu ? "✅" : "—")</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    }
+}
+
+@code {
+    private IReadOnlyList<NotificationVue>? _notifications;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Notifs.AuMessage += SurMessage;
+        if (Session.EstConnecte) await Charger();
+    }
+
+    private async Task Charger()
+    {
+        if (!Session.EstConnecte) return;
+        _notifications = null;
+        _notifications = await Api.ListerNotificationsAsync(Session.UtilisateurId!.Value);
+    }
+
+    // Rafraîchit automatiquement la liste à la réception d'une notification temps réel.
+    private async void SurMessage(NotificationTempsReel _) => await InvokeAsync(Charger);
+
+    public void Dispose() => Notifs.AuMessage -= SurMessage;
+}

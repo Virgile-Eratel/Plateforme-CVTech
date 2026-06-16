@@ -1,0 +1,31 @@
+@inherits LayoutComponentBase
+@inject SessionUtilisateur Session
+@implements IDisposable
+
+<div class="barre">
+    <a href="" class="marque">💼 Plateforme-CVTech</a>
+    <NavMenu />
+    <div class="pousse"></div>
+    @if (Session.EstConnecte)
+    {
+        <CentreNotifications />
+        <span class="chip">
+            @Session.Email
+            <span class="badge-role role-@Session.Role">@Session.Role</span>
+        </span>
+    }
+    else
+    {
+        <a href="compte" class="chip">Se connecter / S'inscrire</a>
+    }
+</div>
+
+<main>
+    @Body
+</main>
+
+@code {
+    protected override void OnInitialized() => Session.AuChangement += Rafraichir;
+    public void Dispose() => Session.AuChangement -= Rafraichir;
+    private void Rafraichir() => InvokeAsync(StateHasChanged);
+}
