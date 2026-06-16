@@ -26,7 +26,7 @@ public class DepotsEmploiEfCoreTests : IDisposable
         new(new DbContextOptionsBuilder<EmploiDbContext>().UseSqlite(_connexion).Options);
 
     [Fact]
-    public async Task UneAnnonceEtSonDomaineMetierSontPersistés()
+    public async Task UneAnnonceEtSonDomaineMetierSontPersistes()
     {
         var domaine = DomaineMetier.Creer("Cloud Azure");
         var annonce = AnnonceEmploi.Publier(
@@ -48,7 +48,7 @@ public class DepotsEmploiEfCoreTests : IDisposable
     }
 
     [Fact]
-    public async Task LeFiltreParDomaineNeRetourneQueLesAnnoncesConcernées()
+    public async Task LeFiltreParDomaineNeRetourneQueLesAnnoncesConcernees()
     {
         await using (var ctx = CreerContexte())
         {
@@ -67,7 +67,7 @@ public class DepotsEmploiEfCoreTests : IDisposable
     }
 
     [Fact]
-    public async Task UnCvConserveSesCompétences()
+    public async Task UnCvConserveSesCompetences()
     {
         var cv = CurriculumVitae.Constituer(
             Guid.NewGuid(), "Développeuse senior", new[] { "C#", "Azure", "EF Core" });

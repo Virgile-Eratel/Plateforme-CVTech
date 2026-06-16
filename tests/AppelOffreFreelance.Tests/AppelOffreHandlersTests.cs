@@ -20,7 +20,7 @@ public class AppelOffreHandlersTests
     private readonly IBusEvenements _bus = Substitute.For<IBusEvenements>();
 
     [Fact]
-    public async Task UneEntreprisePublieUnAppelOffreEtÉmetLévénementAppelOffrePublie()
+    public async Task UneEntreprisePublieUnAppelOffreEtEmetLevenementAppelOffrePublie()
     {
         var entrepriseId = Guid.NewGuid();
         var handler = new PublierAppelOffreHandler(_permissions, _depotAppels, _bus);

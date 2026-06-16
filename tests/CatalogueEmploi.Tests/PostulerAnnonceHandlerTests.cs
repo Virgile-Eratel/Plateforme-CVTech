@@ -16,7 +16,7 @@ public class PostulerAnnonceHandlerTests
     private readonly IDepotCandidatures _depotCandidatures = Substitute.For<IDepotCandidatures>();
 
     [Fact]
-    public async Task UnCandidatBloquéNePeutPasPostuler()
+    public async Task UnCandidatBloqueNePeutPasPostuler()
     {
         var candidatId = Guid.NewGuid();
         _permissions
@@ -32,7 +32,7 @@ public class PostulerAnnonceHandlerTests
     }
 
     [Fact]
-    public async Task UnCandidatAutoriséPeutPostulerSansLettreDeMotivation()
+    public async Task UnCandidatAutorisePeutPostulerSansLettreDeMotivation()
     {
         var candidatId = Guid.NewGuid();
         var annonce = AnnonceEmploi.Publier(

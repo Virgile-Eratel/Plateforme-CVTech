@@ -7,7 +7,7 @@ namespace CVTech.Modules.AppelOffreFreelance.Tests;
 public class DomaineTests
 {
     [Fact]
-    public void UnTjmNegatifOuNulEstRefusé()
+    public void UnTjmNegatifOuNulEstRefuse()
     {
         Action creation = () => BaremeTJM.Creer(0m);
 
@@ -15,7 +15,7 @@ public class DomaineTests
     }
 
     [Fact]
-    public void UnAppelOffreNePeutPasÊtreAttribuéDeuxFois()
+    public void UnAppelOffreNePeutPasEtreAttribueDeuxFois()
     {
         var ao = AppelOffre.Publier(Guid.NewGuid(), "Mission",
             CahierDesCharges.Creer("c", "l", DateTimeOffset.UtcNow.AddDays(10), 0m, 100m),

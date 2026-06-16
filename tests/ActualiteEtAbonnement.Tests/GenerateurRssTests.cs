@@ -10,7 +10,7 @@ public class GenerateurRssTests
     private readonly GenerateurRss _generateur = new();
 
     [Fact]
-    public void LeFluxEstUnRss2PointZéroValideContenantLArticle()
+    public void LeFluxEstUnRss2PointZeroValideContenantLArticle()
     {
         var article = ArticleActualite.Publier(
             Guid.NewGuid(), "Les tendances du recrutement IT en 2026", "Contenu éditorial.",

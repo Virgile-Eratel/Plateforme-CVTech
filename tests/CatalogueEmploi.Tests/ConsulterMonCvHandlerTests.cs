@@ -14,7 +14,7 @@ public class ConsulterMonCvHandlerTests
     private readonly IDepotCv _depot = Substitute.For<IDepotCv>();
 
     [Fact]
-    public async Task UnCompteBloquéNePeutPasConsulterSonCv()
+    public async Task UnCompteBloqueNePeutPasConsulterSonCv()
     {
         var candidatId = Guid.NewGuid();
         _permissions
@@ -29,7 +29,7 @@ public class ConsulterMonCvHandlerTests
     }
 
     [Fact]
-    public async Task SansCvConstituéLaConsultationRenvoieNull()
+    public async Task SansCvConstitueLaConsultationRenvoieNull()
     {
         var candidatId = Guid.NewGuid();
         _depot.ObtenirParCandidatAsync(candidatId, Arg.Any<CancellationToken>())
@@ -42,7 +42,7 @@ public class ConsulterMonCvHandlerTests
     }
 
     [Fact]
-    public async Task LeCandidatRécupèreSaPrésentationEtSesCompétences()
+    public async Task LeCandidatRecupereSaPresentationEtSesCompetences()
     {
         var candidatId = Guid.NewGuid();
         var cv = CurriculumVitae.Constituer(candidatId, "Développeuse senior", new[] { "C#", "Azure" });

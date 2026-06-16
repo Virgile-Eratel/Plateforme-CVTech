@@ -28,22 +28,27 @@ attends/écris le code. Ne génère jamais le code de production d'un cas d'usag
 
 ## 3. Nommage des tests — en français, décrivant une règle métier
 Le nom de la méthode décrit **un comportement métier**, pas une méthode technique.
-Format recommandé : `Sujet_Condition_RésultatAttendu` ou phrase métier directe.
+Format recommandé : `Sujet_Condition_ResultatAttendu` ou phrase métier directe.
+
+**Pas d'accents dans les noms de méthodes** : ils restent en français mais sans
+diacritiques (é→e, è→e, à→a, ô→o, ç→c…). Les accents sont autorisés dans les
+chaînes et les commentaires, jamais dans un identifiant.
 
 Exemples valides :
-- `UnCandidatBloquéNePeutPasPostuler`
+- `UnCandidatBloqueNePeutPasPostuler`
 - `UneEntrepriseNePeutPasPostulerAUneAnnonce`
-- `PublierUneAnnonceÉmetLévénementAnnoncePubliee`
-- `UnAbonnéAuDomaineCloudAzureEstNotifiéÀLaPublication`
+- `PublierUneAnnonceEmetLevenementAnnoncePubliee`
+- `UnAbonneAuDomaineCloudAzureEstNotifieALaPublication`
 - `LeFluxRssNeContientAucuneAnnonceNiAppelDOffre`
-- `UneCandidatureSansLettreDeMotivationEstAcceptée`
+- `UneCandidatureSansLettreDeMotivationEstAcceptee`
 
-Interdits : `Test1`, `TestPostuler`, `HandleShouldWork`.
+Interdits : `Test1`, `TestPostuler`, `HandleShouldWork`, ou tout nom accentué
+(`UnCandidatBloquéNePeutPasPostuler`).
 
 ## 4. Structure d'un test (Arrange / Act / Assert)
 ```csharp
 [Fact]
-public async Task UnCandidatBloquéNePeutPasPostuler()
+public async Task UnCandidatBloqueNePeutPasPostuler()
 {
     // Arrange
     var permissions = Substitute.For<IVerificateurPermission>();

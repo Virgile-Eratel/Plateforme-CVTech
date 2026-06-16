@@ -14,7 +14,7 @@ public class ConstituerCvHandlerTests
     private readonly IDepotCv _depot = Substitute.For<IDepotCv>();
 
     [Fact]
-    public async Task UnCandidatBloquéNePeutPasConstituerSonCv()
+    public async Task UnCandidatBloqueNePeutPasConstituerSonCv()
     {
         var candidatId = Guid.NewGuid();
         _permissions
@@ -30,7 +30,7 @@ public class ConstituerCvHandlerTests
     }
 
     [Fact]
-    public async Task SansCvExistantUnNouveauCvEstCréé()
+    public async Task SansCvExistantUnNouveauCvEstCree()
     {
         var candidatId = Guid.NewGuid();
         _depot.ObtenirParCandidatAsync(candidatId, Arg.Any<CancellationToken>())
@@ -47,7 +47,7 @@ public class ConstituerCvHandlerTests
     }
 
     [Fact]
-    public async Task AvecUnCvExistantCeluiCiEstMisÀJourSansEnRecréerUnAutre()
+    public async Task AvecUnCvExistantCeluiCiEstMisAJourSansEnRecreerUnAutre()
     {
         var candidatId = Guid.NewGuid();
         var existant = CurriculumVitae.Constituer(candidatId, "Ancienne présentation", new[] { "C#" });

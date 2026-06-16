@@ -17,7 +17,7 @@ public class PublierAnnonceHandlerTests
     private readonly IBusEvenements _bus = Substitute.For<IBusEvenements>();
 
     [Fact]
-    public async Task UneEntreprisePublieUneAnnonceEtÉmetLévénementAnnoncePubliee()
+    public async Task UneEntreprisePublieUneAnnonceEtEmetLevenementAnnoncePubliee()
     {
         var entrepriseId = Guid.NewGuid();
         var handler = new PublierAnnonceHandler(_permissions, _depot, _bus);

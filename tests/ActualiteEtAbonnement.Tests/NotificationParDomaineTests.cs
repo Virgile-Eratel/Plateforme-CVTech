@@ -12,7 +12,7 @@ namespace CVTech.Modules.ActualiteEtAbonnement.Tests;
 public class NotificationParDomaineTests
 {
     [Fact]
-    public async Task SeulsLesAbonnésDuDomaineConcernéSontNotifiésÀLaPublication()
+    public async Task SeulsLesAbonnesDuDomaineConcerneSontNotifiesALaPublication()
     {
         // Arrange : deux abonnés sur des domaines différents.
         var abonnements = new DepotAbonnementsFactice();

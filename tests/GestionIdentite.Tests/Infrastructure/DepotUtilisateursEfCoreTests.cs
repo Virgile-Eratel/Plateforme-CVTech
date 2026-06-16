@@ -28,7 +28,7 @@ public class DepotUtilisateursEfCoreTests : IDisposable
         new(new DbContextOptionsBuilder<IdentiteDbContext>().UseSqlite(_connexion).Options);
 
     [Fact]
-    public async Task UnUtilisateurEnregistréPeutÊtreReluDepuisLaBase()
+    public async Task UnUtilisateurEnregistrePeutEtreReluDepuisLaBase()
     {
         var utilisateur = Utilisateur.Inscrire("candidat@cvtech.fr", RoleUtilisateur.Candidat);
         await using (var ctx = CreerContexte())
@@ -48,7 +48,7 @@ public class DepotUtilisateursEfCoreTests : IDisposable
     }
 
     [Fact]
-    public async Task LeBlocageDUnCompteEstPersisté()
+    public async Task LeBlocageDUnCompteEstPersiste()
     {
         var utilisateur = Utilisateur.Inscrire("entreprise@cvtech.fr", RoleUtilisateur.Entreprise);
         await using (var ctx = CreerContexte())

@@ -34,7 +34,7 @@ public class AuthentifierHandlerTests
     }
 
     [Fact]
-    public async Task UnUtilisateurAvecLesBonsIdentifiantsEstAuthentifié()
+    public async Task UnUtilisateurAvecLesBonsIdentifiantsEstAuthentifie()
     {
         var depot = new DepotFactice();
         await depot.AjouterAsync(CreerAvecMotDePasse("candidat@cvtech.fr", RoleUtilisateur.Candidat, "Secret123"));
@@ -48,7 +48,7 @@ public class AuthentifierHandlerTests
     }
 
     [Fact]
-    public async Task UnMotDePasseIncorrectEstRefusé()
+    public async Task UnMotDePasseIncorrectEstRefuse()
     {
         var depot = new DepotFactice();
         await depot.AjouterAsync(CreerAvecMotDePasse("candidat@cvtech.fr", RoleUtilisateur.Candidat, "Secret123"));
@@ -61,7 +61,7 @@ public class AuthentifierHandlerTests
     }
 
     [Fact]
-    public async Task UnEmailInconnuEstRefusé()
+    public async Task UnEmailInconnuEstRefuse()
     {
         var handler = new AuthentifierHandler(new DepotFactice(), new HacheurFactice());
 
@@ -72,7 +72,7 @@ public class AuthentifierHandlerTests
     }
 
     [Fact]
-    public async Task UnCompteBloquéNePeutPasSAuthentifier()
+    public async Task UnCompteBloqueNePeutPasSAuthentifier()
     {
         var depot = new DepotFactice();
         var compte = CreerAvecMotDePasse("candidat@cvtech.fr", RoleUtilisateur.Candidat, "Secret123");

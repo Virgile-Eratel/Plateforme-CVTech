@@ -6,7 +6,7 @@ namespace CVTech.Modules.CatalogueEmploi.Tests;
 public class CurriculumVitaeTests
 {
     [Fact]
-    public void UnCvSansPrésentationEstRefusé()
+    public void UnCvSansPresentationEstRefuse()
     {
         Action action = () => CurriculumVitae.Constituer(Guid.NewGuid(), "   ", new[] { "C#" });
 
@@ -14,7 +14,7 @@ public class CurriculumVitaeTests
     }
 
     [Fact]
-    public void MettreÀJourRemplaceLaPrésentationEtLesCompétences()
+    public void MettreAJourRemplaceLaPresentationEtLesCompetences()
     {
         var cv = CurriculumVitae.Constituer(Guid.NewGuid(), "Présentation initiale", new[] { "C#" });
 
@@ -25,7 +25,7 @@ public class CurriculumVitaeTests
     }
 
     [Fact]
-    public void MettreÀJourAvecUnePrésentationVideEstRefusé()
+    public void MettreAJourAvecUnePresentationVideEstRefuse()
     {
         var cv = CurriculumVitae.Constituer(Guid.NewGuid(), "Présentation initiale", new[] { "C#" });
 

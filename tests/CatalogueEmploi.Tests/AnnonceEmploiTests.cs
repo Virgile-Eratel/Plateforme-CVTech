@@ -7,7 +7,7 @@ namespace CVTech.Modules.CatalogueEmploi.Tests;
 public class AnnonceEmploiTests
 {
     [Fact]
-    public void UneAnnonceSansTitreEstRefusée()
+    public void UneAnnonceSansTitreEstRefusee()
     {
         Action publication = () => AnnonceEmploi.Publier(
             Guid.NewGuid(), "  ", "desc", TypeContrat.CDI, DomaineMetier.Creer("Cloud Azure"));
@@ -16,7 +16,7 @@ public class AnnonceEmploiTests
     }
 
     [Fact]
-    public void LeDomaineMetierEstSlugifiéÀLaCréation()
+    public void LeDomaineMetierEstSlugifieALaCreation()
     {
         var domaine = DomaineMetier.Creer("Cloud Azure");
 

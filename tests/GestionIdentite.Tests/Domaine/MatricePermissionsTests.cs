@@ -20,7 +20,7 @@ public class MatricePermissionsTests
     }
 
     [Fact]
-    public void UnAdministrateurHériteDeTousLesDroits()
+    public void UnAdministrateurHeriteDeTousLesDroits()
     {
         foreach (var action in Enum.GetValues<ActionMetier>())
             MatricePermissions.EstAutorise(RoleUtilisateur.Administrateur, action).Should().BeTrue();

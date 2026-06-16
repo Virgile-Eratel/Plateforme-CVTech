@@ -30,7 +30,7 @@ public class DepotsFreelanceEfCoreTests : IDisposable
         new DateTimeOffset(2026, 9, 1, 0, 0, 0, TimeSpan.Zero), 10_000m, 25_000m);
 
     [Fact]
-    public async Task UnAppelOffreEtSonCahierDesChargesSontPersistés()
+    public async Task UnAppelOffreEtSonCahierDesChargesSontPersistes()
     {
         var appel = AppelOffre.Publier(
             Guid.NewGuid(), "Mission cloud", CahierExemple(), DomaineMetier.Creer("Cloud Azure"));
@@ -53,7 +53,7 @@ public class DepotsFreelanceEfCoreTests : IDisposable
     }
 
     [Fact]
-    public async Task LaSélectionDUnLauréatEstPersistée()
+    public async Task LaSelectionDUnLaureatEstPersistee()
     {
         var appel = AppelOffre.Publier(
             Guid.NewGuid(), "Mission data", CahierExemple(), DomaineMetier.Creer("Data Science"));

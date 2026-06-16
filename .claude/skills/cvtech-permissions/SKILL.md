@@ -83,5 +83,5 @@ Un compte bloqué (cf. `CONTEXT.md`) échoue à **toute** action authentifiée :
 
 ## 7. Preuve par test
 Chaque action protégée doit être accompagnée d'un test prouvant qu'elle est **refusée** pour
-un rôle non autorisé ou un compte bloqué (ex : `UnCandidatBloquéNePeutPasPostuler`,
+un rôle non autorisé ou un compte bloqué (ex : `UnCandidatBloqueNePeutPasPostuler`,
 `UneEntrepriseNePeutPasPostuler`). Voir la skill `cvtech-tdd`.

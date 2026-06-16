@@ -7,7 +7,7 @@ namespace CVTech.Modules.GestionIdentite.Tests.Domaine;
 public class UtilisateurTests
 {
     [Fact]
-    public void UneAdresseEmailInvalideEstRefuséeÀLinscription()
+    public void UneAdresseEmailInvalideEstRefuseeALinscription()
     {
         Action inscription = () => Utilisateur.Inscrire("pas-un-email", RoleUtilisateur.Candidat);
 
@@ -15,7 +15,7 @@ public class UtilisateurTests
     }
 
     [Fact]
-    public void UnUtilisateurInscritNestPasBloqué()
+    public void UnUtilisateurInscritNestPasBloque()
     {
         var utilisateur = Utilisateur.Inscrire("candidat@cvtech.fr", RoleUtilisateur.Candidat);
 
@@ -24,7 +24,7 @@ public class UtilisateurTests
     }
 
     [Fact]
-    public void BloquerUnCandidatLeMarqueCommeBloqué()
+    public void BloquerUnCandidatLeMarqueCommeBloque()
     {
         var candidat = Utilisateur.Inscrire("candidat@cvtech.fr", RoleUtilisateur.Candidat);
 
@@ -34,7 +34,7 @@ public class UtilisateurTests
     }
 
     [Fact]
-    public void DéfinirUnMotDePasseEnregistreSonEmpreinte()
+    public void DefinirUnMotDePasseEnregistreSonEmpreinte()
     {
         var utilisateur = Utilisateur.Inscrire("candidat@cvtech.fr", RoleUtilisateur.Candidat);
 
@@ -44,7 +44,7 @@ public class UtilisateurTests
     }
 
     [Fact]
-    public void UneEmpreinteDeMotDePasseVideEstRefusée()
+    public void UneEmpreinteDeMotDePasseVideEstRefusee()
     {
         var utilisateur = Utilisateur.Inscrire("candidat@cvtech.fr", RoleUtilisateur.Candidat);
 
@@ -54,7 +54,7 @@ public class UtilisateurTests
     }
 
     [Fact]
-    public void UnAdministrateurNePeutPasÊtreBloqué()
+    public void UnAdministrateurNePeutPasEtreBloque()
     {
         var admin = Utilisateur.Creer("admin@cvtech.fr", RoleUtilisateur.Administrateur);
 
@@ -64,7 +64,7 @@ public class UtilisateurTests
     }
 
     [Fact]
-    public void UnCompteAdministrateurNePeutPasÊtreCrééParInscriptionPublique()
+    public void UnCompteAdministrateurNePeutPasEtreCreeParInscriptionPublique()
     {
         Action inscription = () => Utilisateur.Inscrire("admin@cvtech.fr", RoleUtilisateur.Administrateur);
 
@@ -74,7 +74,7 @@ public class UtilisateurTests
     [Theory]
     [InlineData(RoleUtilisateur.Candidat)]
     [InlineData(RoleUtilisateur.Entreprise)]
-    public void LinscriptionPubliqueAccepteLesRôlesCandidatEtEntreprise(RoleUtilisateur role)
+    public void LinscriptionPubliqueAccepteLesRolesCandidatEtEntreprise(RoleUtilisateur role)
     {
         var utilisateur = Utilisateur.Inscrire("nouveau@cvtech.fr", role);
 
@@ -82,7 +82,7 @@ public class UtilisateurTests
     }
 
     [Fact]
-    public void LeProvisionnementAdministratifPeutCréerUnAdministrateur()
+    public void LeProvisionnementAdministratifPeutCreerUnAdministrateur()
     {
         var admin = Utilisateur.Creer("admin@cvtech.fr", RoleUtilisateur.Administrateur);
 

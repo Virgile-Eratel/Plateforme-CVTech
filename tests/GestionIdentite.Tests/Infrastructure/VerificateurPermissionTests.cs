@@ -37,7 +37,7 @@ public class VerificateurPermissionTests
     }
 
     [Fact]
-    public async Task UnCandidatEstAutoriséÀPostuler()
+    public async Task UnCandidatEstAutoriseAPostuler()
     {
         var (verificateur, candidat) = await PreparerAsync(RoleUtilisateur.Candidat);
 
@@ -47,7 +47,7 @@ public class VerificateurPermissionTests
     }
 
     [Fact]
-    public async Task UneEntrepriseNestPasAutoriséeÀPostuler()
+    public async Task UneEntrepriseNestPasAutoriseeAPostuler()
     {
         var (verificateur, entreprise) = await PreparerAsync(RoleUtilisateur.Entreprise);
 
@@ -57,7 +57,7 @@ public class VerificateurPermissionTests
     }
 
     [Fact]
-    public async Task UnCompteBloquéNestAutoriséÀAucuneAction()
+    public async Task UnCompteBloqueNestAutoriseAAucuneAction()
     {
         var (verificateur, candidat) = await PreparerAsync(RoleUtilisateur.Candidat, bloque: true);
 
@@ -67,7 +67,7 @@ public class VerificateurPermissionTests
     }
 
     [Fact]
-    public async Task ExigerLèvePermissionRefuséePourUnCompteInconnu()
+    public async Task ExigerLevePermissionRefuseePourUnCompteInconnu()
     {
         var (verificateur, _) = await PreparerAsync(RoleUtilisateur.Candidat);
 

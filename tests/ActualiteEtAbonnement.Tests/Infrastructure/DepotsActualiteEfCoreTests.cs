@@ -29,7 +29,7 @@ public class DepotsActualiteEfCoreTests : IDisposable
         new(new DbContextOptionsBuilder<ActualiteDbContext>().UseSqlite(_connexion).Options);
 
     [Fact]
-    public async Task UnArticleAvecSonDomaineEtSaSourceEstPersisté()
+    public async Task UnArticleAvecSonDomaineEtSaSourceEstPersiste()
     {
         var article = ArticleActualite.Publier(
             Guid.NewGuid(), "Tendances 2026", "Contenu éditorial", CategorieEditoriale.Frameworks,
@@ -51,7 +51,7 @@ public class DepotsActualiteEfCoreTests : IDisposable
     }
 
     [Fact]
-    public async Task UnArticleSansDomaineNiSourceEstPersisté()
+    public async Task UnArticleSansDomaineNiSourceEstPersiste()
     {
         var article = ArticleActualite.Publier(
             Guid.NewGuid(), "Édito libre", "Sans domaine", CategorieEditoriale.RetourExperience);
@@ -70,7 +70,7 @@ public class DepotsActualiteEfCoreTests : IDisposable
     }
 
     [Fact]
-    public async Task UnAbonnementConserveSesDomainesEtPermetDeRetrouverLesAbonnés()
+    public async Task UnAbonnementConserveSesDomainesEtPermetDeRetrouverLesAbonnes()
     {
         var utilisateur = Guid.NewGuid();
         var abonnement = Abonnement.Creer(
@@ -93,7 +93,7 @@ public class DepotsActualiteEfCoreTests : IDisposable
     }
 
     [Fact]
-    public async Task UneNotificationEstPersistéePourSonDestinataire()
+    public async Task UneNotificationEstPersisteePourSonDestinataire()
     {
         var destinataire = Guid.NewGuid();
         var notification = Notification.Creer(destinataire, "Nouvelle annonce", "Cloud Azure", CanalDiffusion.InApp);
