@@ -84,5 +84,34 @@ public class DepotsEmploiEfCoreTests : IDisposable
         relu.Competences.Should().BeEquivalentTo("C#", "Azure", "EF Core");
     }
 
+    [Fact]
+    public async Task ObtenirParCandidatRetrouveLeCvDuCandidat()
+    {
+        var candidatId = Guid.NewGuid();
+        var cv = CurriculumVitae.Constituer(candidatId, "Présentation", new[] { "C#" });
+        await using (var ctx = CreerContexte())
+        {
+            await new DepotCvEfCore(ctx).AjouterAsync(cv);
+            await new DepotCvEfCore(ctx).EnregistrerAsync();
+        }
+
+        await using var lecture = CreerContexte();
+        var relu = await new DepotCvEfCore(lecture).ObtenirParCandidatAsync(candidatId);
+
+        relu.Should().NotBeNull();
+        relu!.CandidatId.Should().Be(candidatId);
+        relu.Presentation.Should().Be("Présentation");
+    }
+
+    [Fact]
+    public async Task ObtenirParCandidatRenvoieNullSansCv()
+    {
+        await using var lecture = CreerContexte();
+
+        var relu = await new DepotCvEfCore(lecture).ObtenirParCandidatAsync(Guid.NewGuid());
+
+        relu.Should().BeNull();
+    }
+
     public void Dispose() => _connexion.Dispose();
 }

@@ -6,6 +6,10 @@
     <NavLink href="emploi">Emploi</NavLink>
     <NavLink href="freelance">Freelance</NavLink>
     <NavLink href="actualite">Actualité &amp; RSS</NavLink>
+    @if (Session.A(RoleUtilisateur.Candidat) || Session.EstAdmin)
+    {
+        <NavLink href="profil">Mon profil</NavLink>
+    }
     @if (Session.EstConnecte)
     {
         <NavLink href="notifications">Mes notifications</NavLink>

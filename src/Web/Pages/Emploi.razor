@@ -38,17 +38,13 @@
     </div>
 }
 
-@* --- CV (Candidat / Administrateur) --- *@
+@* --- CV (Candidat / Administrateur) — désormais géré sur la page « Mon profil » --- *@
 @if (PeutGererCv)
 {
     <div class="carte">
-        <h3>Constituer mon CV</h3>
-        <label>Présentation</label>
-        <textarea @bind="_presentation"></textarea>
-        <label>Compétences (séparées par des virgules)</label>
-        <input @bind="_competences" placeholder="C#, Azure, Terraform" />
-        <br /><br />
-        <button @onclick="ConstituerCv" disabled="@_occupe">Enregistrer mon CV</button>
+        <h3>Mon CV</h3>
+        <p class="muet">Consultez et mettez à jour votre CV depuis votre profil.</p>
+        <a class="bouton" href="profil">Aller à mon profil</a>
     </div>
 }
 
@@ -111,9 +107,6 @@ else
     private string _titre = "", _description = "", _domainePublication = "";
     private TypeContrat _typeContrat = TypeContrat.CDI;
 
-    // CV
-    private string _presentation = "", _competences = "";
-
     // Candidature
     private Guid? _annonceEnCandidature;
     private string _lettre = "";
@@ -142,19 +135,6 @@ else
             Avertir($"Annonce « {_titre} » publiée dans le domaine « {_domainePublication} ».", "ok");
             _titre = _description = ""; _domainePublication = "";
             await Charger();
-        }
-        catch (ApiException ex) { Avertir(ex.Message, "erreur"); }
-        finally { _occupe = false; }
-    }
-
-    private async Task ConstituerCv()
-    {
-        _occupe = true;
-        try
-        {
-            var competences = _competences.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-            await Api.ConstituerCvAsync(_presentation, competences);
-            Avertir("CV enregistré.", "ok");
         }
         catch (ApiException ex) { Avertir(ex.Message, "erreur"); }
         finally { _occupe = false; }

@@ -27,10 +27,19 @@ public sealed class ConstituerCvHandler(
     {
         await permissions.ExigerAsync(commande.CandidatId, ActionMetier.ConstituerCv, ct: ct);
 
-        var cv = CurriculumVitae.Constituer(commande.CandidatId, commande.Presentation, commande.Competences);
-        await depot.AjouterAsync(cv, ct);
-        await depot.EnregistrerAsync(ct);
+        // Un seul CV par candidat : on révise l'existant plutôt que d'en accumuler de nouveaux.
+        var cv = await depot.ObtenirParCandidatAsync(commande.CandidatId, ct);
+        if (cv is null)
+        {
+            cv = CurriculumVitae.Constituer(commande.CandidatId, commande.Presentation, commande.Competences);
+            await depot.AjouterAsync(cv, ct);
+        }
+        else
+        {
+            cv.MettreAJour(commande.Presentation, commande.Competences);
+        }
 
+        await depot.EnregistrerAsync(ct);
         return cv.Id;
     }
 }

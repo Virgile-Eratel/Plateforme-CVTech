@@ -13,6 +13,7 @@ public interface IDepotAnnonces
 public interface IDepotCv
 {
     Task AjouterAsync(CurriculumVitae cv, CancellationToken ct = default);
+    Task<CurriculumVitae?> ObtenirParCandidatAsync(Guid candidatId, CancellationToken ct = default);
     Task EnregistrerAsync(CancellationToken ct = default);
 }
 

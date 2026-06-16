@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using CVTech.Modules.CatalogueEmploi.Application.Features.ConstituerCv;
+using CVTech.Modules.CatalogueEmploi.Application.Features.ConsulterMonCv;
 using CVTech.Modules.CatalogueEmploi.Application.Features.ListerAnnonces;
 using CVTech.Modules.CatalogueEmploi.Application.Features.PostulerAnnonce;
 using CVTech.Modules.CatalogueEmploi.Application.Features.PublierAnnonce;
@@ -32,12 +33,20 @@ public static class CatalogueEmploiEndpoints
                 return Results.Created($"/emploi/annonces/{id}", new { id });
             })).RequireAuthorization();
 
-        // Constitution d'un CV (Candidat / Admin).
+        // Constitution / mise à jour d'un CV (Candidat / Admin). Un seul CV par candidat.
         groupe.MapPost("/cv", async (ConstituerCvRequete r, ClaimsPrincipal u, ISender sender) =>
             await Executer(async () =>
             {
                 var id = await sender.Send(new ConstituerCvCommand(u.IdUtilisateur(), r.Presentation, r.Competences));
                 return Results.Created($"/emploi/cv/{id}", new { id });
+            })).RequireAuthorization();
+
+        // Consultation de SON propre CV (Candidat / Admin). 200 avec le CV, ou 204 si aucun CV.
+        groupe.MapGet("/mon-cv", async (ClaimsPrincipal u, ISender sender) =>
+            await Executer(async () =>
+            {
+                var cv = await sender.Send(new ConsulterMonCvQuery(u.IdUtilisateur()));
+                return cv is null ? Results.NoContent() : Results.Ok(cv);
             })).RequireAuthorization();
 
         // Candidature à une annonce (Candidat).

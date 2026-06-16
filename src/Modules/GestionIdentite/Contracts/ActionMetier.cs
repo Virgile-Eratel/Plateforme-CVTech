@@ -8,6 +8,7 @@ namespace CVTech.Modules.GestionIdentite.Contracts;
 public enum ActionMetier
 {
     ConstituerCv,
+    ConsulterCv,
     PostulerAnnonce,
     SoumettreProposition,
     PublierAnnonce,

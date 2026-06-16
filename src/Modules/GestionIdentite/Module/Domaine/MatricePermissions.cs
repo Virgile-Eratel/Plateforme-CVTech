@@ -14,6 +14,7 @@ public static class MatricePermissions
         [RoleUtilisateur.Candidat] =
         [
             ActionMetier.ConstituerCv,
+            ActionMetier.ConsulterCv,
             ActionMetier.PostulerAnnonce,
             ActionMetier.SoumettreProposition,
             ActionMetier.SAbonnerDomaine

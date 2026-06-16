@@ -22,7 +22,7 @@ l'API. Persistance **EF Core / Azure SQL** (un schéma par module). Déploiement
 
 ```bash
 # 1. Cloner
-git clone <url-du-depot> && cd TPSkills
+git clone https://github.com/Virgile-Eratel/Plateforme-CVTech && cd Plateforme-CVTech
 
 # 2. Restaurer + compiler
 dotnet restore CVTech.slnx
@@ -32,11 +32,10 @@ dotnet build   CVTech.slnx
 dotnet test CVTech.slnx          # 51 tests
 
 # 4. Démarrer l'application (API + front Blazor servis ensemble)
-ASPNETCORE_URLS=http://localhost:5099 \
-  dotnet run --project src/Api/CVTech.Api.csproj --no-launch-profile
+dotnet run --project src/Api/CVTech.Api.csproj
 
 # 5. Ouvrir le front
-#    → http://localhost:5099
+#    → http://localhost:5229
 ```
 
 En local, aucune base à installer : chaque module crée son fichier SQLite
@@ -121,7 +120,8 @@ graph LR
 | POST | `/identite/comptes/{id}/blocage` | Admin | Bloquer un compte |
 | GET | `/emploi/annonces` `?domaine=` | public | Lister les annonces |
 | POST | `/emploi/annonces` | Entreprise/Admin | Publier une annonce → `AnnoncePubliee` |
-| POST | `/emploi/cv` | Candidat/Admin | Constituer son CV |
+| POST | `/emploi/cv` | Candidat/Admin | Constituer / mettre à jour son CV (un seul CV par candidat) |
+| GET | `/emploi/mon-cv` | Candidat/Admin | Consulter son CV (`204` si aucun) |
 | POST | `/emploi/annonces/{id}/candidatures` | Candidat | Postuler |
 | GET | `/freelance/appels-offre` `?domaine=` | public | Lister les appels d'offre |
 | POST | `/freelance/appels-offre` | Entreprise/Admin | Publier un AO → `AppelOffrePublie` |
@@ -146,6 +146,7 @@ Source de vérité du contrôle d'accès, portée par `GestionIdentite` et appli
 | Consulter une annonce / un appel d'offre | ✅ | ✅ | ✅ | ✅ |
 | Consulter le fil RSS (`/feed/rss`) | ✅ | ✅ | ✅ | ✅ |
 | Constituer / modifier son CV | ❌ | ✅ | ❌ | ✅ |
+| Consulter son CV | ❌ | ✅ | ❌ | ✅ |
 | Postuler à une annonce | ❌ | ✅ | ❌ | ❌ |
 | Soumettre une proposition freelance | ❌ | ✅ | ❌ | ❌ |
 | Publier une annonce d'emploi | ❌ | ❌ | ✅ (les siennes) | ✅ |

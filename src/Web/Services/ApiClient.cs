@@ -60,6 +60,16 @@ public sealed class ApiClient(HttpClient http, SessionUtilisateur session)
         return (await reponse.Content.ReadFromJsonAsync<CreationReponse>())!.Id;
     }
 
+    /// <summary>Récupère le CV du candidat connecté, ou null s'il n'en a pas encore constitué (204).</summary>
+    public async Task<CvVue?> ObtenirMonCvAsync()
+    {
+        Authentifier();
+        var reponse = await http.GetAsync("/emploi/mon-cv");
+        if (reponse.StatusCode == HttpStatusCode.NoContent) return null;
+        await AssurerSuccesAsync(reponse);
+        return await reponse.Content.ReadFromJsonAsync<CvVue>();
+    }
+
     public async Task<Guid> PostulerAsync(Guid annonceId, string? lettreMotivation)
     {
         Authentifier();

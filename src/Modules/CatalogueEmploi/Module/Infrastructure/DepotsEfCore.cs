@@ -33,6 +33,9 @@ public sealed class DepotCvEfCore(EmploiDbContext contexte) : IDepotCv
     public async Task AjouterAsync(CurriculumVitae cv, CancellationToken ct = default) =>
         await contexte.Cvs.AddAsync(cv, ct);
 
+    public Task<CurriculumVitae?> ObtenirParCandidatAsync(Guid candidatId, CancellationToken ct = default) =>
+        contexte.Cvs.FirstOrDefaultAsync(c => c.CandidatId == candidatId, ct);
+
     public Task EnregistrerAsync(CancellationToken ct = default) => contexte.SaveChangesAsync(ct);
 }
 

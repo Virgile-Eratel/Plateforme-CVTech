@@ -1,0 +1,160 @@
+@page "/profil"
+@inject ApiClient Api
+@inject SessionUtilisateur Session
+
+<h1>Mon profil</h1>
+
+@if (!Session.EstConnecte)
+{
+    <div class="carte">
+        <p>Connectez-vous pour consulter et mettre à jour votre CV.</p>
+        <a class="bouton" href="compte">Se connecter / S'inscrire</a>
+    </div>
+}
+else if (!PeutGererCv)
+{
+    <div class="alerte info">Seuls les candidats disposent d'un CV. Votre rôle : @Session.Role.</div>
+}
+else
+{
+    @if (_message is not null)
+    {
+        <div class="alerte @_classe">@_message</div>
+    }
+
+    @* --- En-tête identité --- *@
+    <div class="carte profil-entete">
+        <div class="profil-avatar">@Initiales</div>
+        <div>
+            <h2 class="profil-nom">@Session.Email</h2>
+            <span class="badge-role role-@Session.Role">@Session.Role</span>
+        </div>
+    </div>
+
+    @if (_chargement)
+    {
+        <p class="muet">Chargement de votre CV…</p>
+    }
+    else if (_edition)
+    {
+        <div class="carte">
+            <h3>Modifier mon CV</h3>
+            <label>Présentation</label>
+            <textarea rows="6" @bind="_presentation"
+                      placeholder="Décrivez votre parcours, vos objectifs, votre valeur ajoutée…"></textarea>
+            <label>Compétences (séparées par des virgules)</label>
+            <input @bind="_competences" placeholder="C#, Azure, Terraform" />
+            <br /><br />
+            <button @onclick="Enregistrer" disabled="@_occupe">Enregistrer</button>
+            @if (_cv is not null)
+            {
+                <button class="secondaire" @onclick="AnnulerEdition" disabled="@_occupe">Annuler</button>
+            }
+        </div>
+    }
+    else if (_cv is null)
+    {
+        <div class="carte">
+            <h3>Vous n'avez pas encore de CV</h3>
+            <p class="muet">Constituez votre CV pour postuler aux annonces et appels d'offre.</p>
+            <button @onclick="DemarrerEdition">Créer mon CV</button>
+        </div>
+    }
+    else
+    {
+        <div class="carte">
+            <div class="profil-titre-ligne">
+                <h3>Présentation</h3>
+                <button class="petit secondaire" @onclick="DemarrerEdition">Modifier</button>
+            </div>
+            <p class="profil-presentation">@_cv.Presentation</p>
+        </div>
+
+        <div class="carte">
+            <h3>Compétences</h3>
+            @if (_cv.Competences.Count == 0)
+            {
+                <p class="muet">Aucune compétence renseignée.</p>
+            }
+            else
+            {
+                <div class="pills">
+                    @foreach (var c in _cv.Competences)
+                    {
+                        <span class="pill">@c</span>
+                    }
+                </div>
+            }
+        </div>
+    }
+}
+
+@code {
+    private CvVue? _cv;
+    private bool _chargement = true;
+    private bool _edition;
+    private bool _occupe;
+    private string _presentation = "", _competences = "";
+    private string? _message;
+    private string _classe = "info";
+
+    private bool PeutGererCv => Session.A(RoleUtilisateur.Candidat) || Session.EstAdmin;
+    private string Initiales => string.IsNullOrEmpty(Session.Email) ? "?" : Session.Email[..1].ToUpperInvariant();
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Session.EstConnecte && PeutGererCv)
+            await Charger();
+        else
+            _chargement = false;
+    }
+
+    private async Task Charger()
+    {
+        _chargement = true;
+        try
+        {
+            _cv = await Api.ObtenirMonCvAsync();
+        }
+        catch (ApiException ex) { Avertir(ex.Message, "erreur"); }
+        finally { _chargement = false; }
+    }
+
+    private void DemarrerEdition()
+    {
+        _presentation = _cv?.Presentation ?? "";
+        _competences = _cv is null ? "" : string.Join(", ", _cv.Competences);
+        _message = null;
+        _edition = true;
+    }
+
+    private void AnnulerEdition()
+    {
+        _edition = false;
+        _message = null;
+    }
+
+    private async Task Enregistrer()
+    {
+        if (string.IsNullOrWhiteSpace(_presentation))
+        {
+            Avertir("La présentation est obligatoire.", "erreur");
+            return;
+        }
+
+        _occupe = true;
+        try
+        {
+            var competences = _competences
+                .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            await Api.ConstituerCvAsync(_presentation, competences);
+            await Charger();
+            _edition = false;
+            Avertir("CV enregistré.", "ok");
+        }
+        catch (ApiException ex) { Avertir(ex.Message, "erreur"); }
+        finally { _occupe = false; }
+    }
+
+    private void Avertir(string m, string c) { _message = m; _classe = c; }
+}
