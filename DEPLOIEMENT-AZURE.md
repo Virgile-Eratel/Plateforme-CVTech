@@ -3,13 +3,9 @@
 Ce document explique **point par point** comment déployer Plateforme-CVTech sur Azure,
 **du premier coup**, y compris après avoir **supprimé entièrement le resource group**.
 
-Il existe **deux chemins** :
-
-- **[Chemin A — Déploiement manuel](#chemin-a--déploiement-manuel-az-cli)** (rapide, pour tester / démontrer).
-- **[Chemin B — Déploiement automatisé](#chemin-b--déploiement-automatisé-azure-devops)** (le pipeline `azure-pipelines.yml`, livrable du TP).
-
-Les deux s'appuient sur la même infrastructure décrite en Bicep (`infra/main.bicep`) :
-**Azure SQL Database** + **App Service Linux (.NET 10)** qui héberge l'API **et** le front Blazor WASM.
+Le déploiement se fait **manuellement via az CLI** (rapide, pour tester / démontrer). Il s'appuie
+sur l'infrastructure décrite en Bicep (`infra/main.bicep`) : **Azure SQL Database** +
+**App Service Linux (.NET 10)** qui héberge l'API **et** le front Blazor WASM.
 
 > 🧠 **Principe clé** : à Azure, l'application démarre avec `Persistence:Provider=SqlServer` et la
 > connection string `CVTech`. Au démarrage, elle **applique automatiquement les migrations EF Core**
@@ -34,8 +30,6 @@ Les deux s'appuient sur la même infrastructure décrite en Bicep (`infra/main.b
    az bicep install      # installe/maj le compilateur Bicep
    ```
 3. **.NET 10 SDK** installé (`dotnet --version` → `10.x`).
-4. **Pour le Chemin B uniquement** : une organisation **Azure DevOps** et l'agent self-hosted
-   `vsts-agent-osx-arm64` (déjà présent dans le dossier parent) configuré et **en ligne**.
 
 Définissez les variables réutilisées ci-dessous (adaptez les valeurs) :
 
@@ -61,7 +55,7 @@ SKU_PLAN=F1                     # F1 (gratuit) pour Azure for Students ; B1 sino
 
 ---
 
-## Chemin A — Déploiement manuel (az CLI)
+## Déploiement manuel (az CLI)
 
 ### A.1. Se connecter et choisir l'abonnement
 ```bash
@@ -176,71 +170,6 @@ Options : `--force` (vide les tables puis régénère) · `--dry-run` (génère 
 
 ---
 
-## Chemin B — Déploiement automatisé (Azure DevOps)
-
-Le pipeline `azure-pipelines.yml` enchaîne **restore → test → build → publish → deploy**.
-Le déploiement n'a lieu **que si les tests sont au vert** (`dependsOn: Build_Test` + `condition: succeeded()`).
-La cible MSBuild `ResoudreFrontBlazor` s'exécute aussi en CI (même `dotnet publish`) → le front est correct.
-
-### B.1. Pousser le dépôt dans Azure DevOps
-- Créez un **projet** dans votre organisation Azure DevOps.
-- Poussez ce dépôt Git (`Repos`) ou connectez le dépôt GitHub existant.
-
-### B.2. Préparer le pool d'agent self-hosted
-- L'agent `vsts-agent-osx-arm64` doit être enregistré dans un **pool** et affiché **Online**
-  (Project settings → **Agent pools**).
-- Dans `azure-pipelines.yml`, alignez le nom du pool :
-  ```yaml
-  pool:
-    name: Default        # ← remplacer par le nom réel de votre pool
-  ```
-
-### B.3. Créer la service connection ARM
-- Project settings → **Service connections** → **New** → **Azure Resource Manager**.
-- Portée : votre abonnement (et idéalement le resource group `rg-cvtech-fc`).
-- Notez le **nom** donné à la connection (ex. `sc-azure-cvtech`).
-
-> ℹ️ Le pipeline ne crée pas le resource group : créez-le au préalable
-> (`az group create -n rg-cvtech-fc -l francecentral`) ou ajoutez l'étape correspondante.
-
-### B.4. Définir les variables de pipeline
-Pipeline → **Edit** → **Variables**, ajoutez :
-
-| Variable | Exemple | Secrète |
-|---|---|:---:|
-| `serviceConnexionAzure` | `sc-azure-cvtech` | non |
-| `groupeRessources` | `rg-cvtech-fc` | non |
-| `prefixe` | `cvtech` | non |
-| `skuPlan` | `F1` (étudiant) / `B1` | non |
-| `adminSqlLogin` | `cvtechadmin` | non |
-| `adminSqlPassword` | `Cvtech!2026Azure#Db` | **oui** 🔒 |
-| `jwtCle` | chaîne aléatoire ≥ 32 caractères | **oui** 🔒 |
-
-> Cochez le **cadenas** pour `adminSqlPassword` et `jwtCle` afin qu'ils soient masqués dans les logs.
-> Assurez-vous que le `az deployment group create` du YAML passe bien `skuPlan=$(skuPlan)`.
-
-### B.5. Créer l'environnement de déploiement
-- Pipelines → **Environments** → **New environment** → nom **`cvtech-production`**
-  (valeur attendue par le `deployment` du YAML). Type *None* suffit.
-
-### B.6. Lancer le pipeline
-- Pipelines → **New pipeline** → sélectionnez le dépôt → *Existing Azure Pipelines YAML file*
-  → `/azure-pipelines.yml` → **Run**.
-
-Déroulé attendu :
-1. **Build_Test** : `dotnet restore`, `dotnet test`, `dotnet build`, `dotnet publish` puis
-   publication de l'artefact `cvtech-app`. ➡️ Si un test échoue, **pas de déploiement**.
-2. **Deploy** : `az deployment group create` (Bicep) puis `AzureWebApp@1` (déploie l'artefact).
-
-### B.7. Vérifier
-- Dans le portail Azure, ouvrez l'App Service → **Browse**, ou récupérez l'URL :
-  ```bash
-  az webapp show -g rg-cvtech-fc -n <nomApp> --query defaultHostName -o tsv
-  ```
-- Testez `/feed/rss` et les 3 parcours via le front.
-
----
-
 ## 🔧 Détail des réglages appliqués automatiquement
 
 | Réglage | Où | Valeur | Effet |
@@ -271,7 +200,6 @@ Déroulé attendu :
 | `Login failed for user` au démarrage | Pare-feu SQL ou identifiants | Vérifier `AllowAllAzureServices` et `adminSqlLogin/Password` |
 | HTTP 500 au 1ᵉʳ appel | Migrations en cours / échec | `az webapp log tail -g $GROUPE -n <nomApp>` |
 | Seeder : `Cannot open server ... requested by the login` | IP non autorisée au pare-feu SQL | Ajouter la règle pare-feu pour votre IP (cf. A.7) |
-| Pipeline bloqué sur l'agent | Pool incorrect ou agent offline | Aligner `pool.name` et vérifier l'état de l'agent |
 
 Logs en direct :
 ```bash
