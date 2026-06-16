@@ -27,4 +27,34 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <!--
+    Le publish de l'API copie la sortie *build* du client Blazor : index.html garde le
+    placeholder d'empreinte (_framework/blazor.webassembly#[.{fingerprint}].js) + import map
+    vide, et les assets _framework ne sont pas trimmés. La résolution + le trimming n'ont
+    lieu qu'au *publish* du projet client. Résultat sans correctif : index.html non résolu
+    (404 du boot script), et même résolu, son import map pointe vers des empreintes (dotnet.*.js,
+    .wasm) qui n'existent pas dans le _framework non-trimmé -> 404.
+    Cette cible republie le client et remplace TOUT le wwwroot publié par celui du publish
+    client : index.html, import map et assets _framework proviennent ainsi de la MÊME source,
+    donc cohérents. Permanent et valable en CI (Azure DevOps fait le même dotnet publish).
+  -->
+  <Target Name="ResoudreFrontBlazor" AfterTargets="Publish">
+    <PropertyGroup>
+      <!-- Chemin ABSOLU : sinon le projet client interprète PublishDir par rapport à son
+           propre dossier et la copie ne retrouve pas les fichiers. -->
+      <_ClientPublishDir>$(MSBuildProjectDirectory)/$(IntermediateOutputPath)client-publish/</_ClientPublishDir>
+    </PropertyGroup>
+    <MSBuild Projects="..\Web\CVTech.Web.csproj"
+             Targets="Publish"
+             Properties="Configuration=$(Configuration);PublishDir=$(_ClientPublishDir)" />
+    <!-- Repart d'un wwwroot propre pour éviter de laisser des assets non-trimmés orphelins. -->
+    <RemoveDir Directories="$(PublishDir)wwwroot" />
+    <ItemGroup>
+      <_FrontPublie Include="$(_ClientPublishDir)wwwroot\**\*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_FrontPublie)"
+          DestinationFiles="@(_FrontPublie->'$(PublishDir)wwwroot\%(RecursiveDir)%(Filename)%(Extension)')"
+          OverwriteReadOnlyFiles="true" />
+  </Target>
+
 </Project>

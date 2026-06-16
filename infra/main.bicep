@@ -22,8 +22,11 @@ param adminSqlPassword string
 @secure()
 param jwtCle string
 
-@description('Référence (SKU) du plan App Service.')
+@description('Référence (SKU) du plan App Service. F1 = gratuit (pas de alwaysOn).')
 param skuPlan string = 'B1'
+
+// alwaysOn n'est pas supporté par le tier gratuit F1 : on l'active seulement hors F1.
+var alwaysOnActif = skuPlan != 'F1'
 
 var nomServeurSql = '${prefixe}-sql-${uniqueString(resourceGroup().id)}'
 var nomBaseSql = '${prefixe}-db'
@@ -91,7 +94,7 @@ resource app 'Microsoft.Web/sites@2023-12-01' = {
     httpsOnly: true
     siteConfig: {
       linuxFxVersion: 'DOTNETCORE|10.0'
-      alwaysOn: true
+      alwaysOn: alwaysOnActif
       ftpsState: 'Disabled'
       // Bascule la persistance sur Azure SQL : les migrations EF s'appliquent au démarrage.
       appSettings: [

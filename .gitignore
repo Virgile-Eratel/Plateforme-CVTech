@@ -30,3 +30,7 @@ appsettings.*.local.json
 
 # Artefact de compilation Bicep (généré par az bicep build)
 infra/main.json
+
+# Artefacts de déploiement (générés par dotnet publish / zip)
+publish/
+app.zip
