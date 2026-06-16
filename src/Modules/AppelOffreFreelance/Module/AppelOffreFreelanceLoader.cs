@@ -1,4 +1,5 @@
 using CVTech.Modules.AppelOffreFreelance.Application;
+using CVTech.Modules.AppelOffreFreelance.Client;
 using CVTech.Modules.AppelOffreFreelance.Infrastructure;
 using CVTech.Modules.AppelOffreFreelance.Infrastructure.Persistence;
 using FluentValidation;
@@ -22,6 +23,11 @@ public static class AppelOffreFreelanceLoader
         services.AddDbContext<FreelanceDbContext>(configurerBdd);
         services.AddScoped<IDepotAppelsOffre, DepotAppelsOffreEfCore>();
         services.AddScoped<IDepotPropositions, DepotPropositionsEfCore>();
+
+        // Endpoints des vertical slices (un IEndpoint par feature, défini dans Application).
+        foreach (var type in assembly.GetTypes()
+                     .Where(t => t is { IsClass: true, IsAbstract: false } && typeof(IEndpoint).IsAssignableFrom(t)))
+            services.AddSingleton(typeof(IEndpoint), type);
 
         return services;
     }
