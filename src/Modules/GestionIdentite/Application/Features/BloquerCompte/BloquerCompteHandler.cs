@@ -2,6 +2,8 @@ using CVTech.Modules.GestionIdentite.Application;
 using CVTech.Modules.GestionIdentite.Contracts;
 using MediatR;
 
+using CVTech.Modules.GestionIdentite.Domaine;
+
 namespace CVTech.Modules.GestionIdentite.Application.Features.BloquerCompte;
 
 public sealed class BloquerCompteHandler(
@@ -18,6 +20,6 @@ public sealed class BloquerCompteHandler(
             ?? throw new InvalidOperationException("Compte cible introuvable.");
 
         cible.Bloquer();
-        await depot.EnregistrerAsync(ct);
+        await depot.MettreAJourAsync(cible, ct);
     }
 }

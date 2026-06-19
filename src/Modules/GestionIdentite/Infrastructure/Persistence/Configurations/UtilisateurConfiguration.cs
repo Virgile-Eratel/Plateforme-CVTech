@@ -1,13 +1,13 @@
-using CVTech.Modules.GestionIdentite.Domaine;
+using CVTech.Modules.GestionIdentite.Infrastructure.Persistence.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace CVTech.Modules.GestionIdentite.Infrastructure.Persistence.Configurations;
 
-/// <summary>Mapping relationnel de l'agrégat <see cref="Utilisateur"/>.</summary>
-public sealed class UtilisateurConfiguration : IEntityTypeConfiguration<Utilisateur>
+/// <summary>Mapping relationnel de l'entité de persistance <see cref="UtilisateurEntity"/>.</summary>
+public sealed class UtilisateurConfiguration : IEntityTypeConfiguration<UtilisateurEntity>
 {
-    public void Configure(EntityTypeBuilder<Utilisateur> builder)
+    public void Configure(EntityTypeBuilder<UtilisateurEntity> builder)
     {
         builder.ToTable("Utilisateurs");
         builder.HasKey(u => u.Id);
@@ -19,8 +19,5 @@ public sealed class UtilisateurConfiguration : IEntityTypeConfiguration<Utilisat
         builder.Property(u => u.Role).HasConversion<string>().HasMaxLength(20).IsRequired();
         builder.Property(u => u.EstBloque).IsRequired();
         builder.Property(u => u.MotDePasseHash).HasMaxLength(256);
-
-        // Les événements d'intégration ne sont pas persistés (transient, publiés sur le bus).
-        builder.Ignore(u => u.EvenementsNonPublies);
     }
 }

@@ -23,7 +23,12 @@ public class AuthentifierHandlerTests
             Task.FromResult(_u.FirstOrDefault(x => x.Id == id));
         public Task<Utilisateur?> ObtenirParEmailAsync(string email, CancellationToken ct = default) =>
             Task.FromResult(_u.FirstOrDefault(x => x.Email == email));
-        public Task EnregistrerAsync(CancellationToken ct = default) => Task.CompletedTask;
+        public Task MettreAJourAsync(Utilisateur u, CancellationToken ct = default)
+        {
+            _u.RemoveAll(x => x.Id == u.Id);
+            _u.Add(u);
+            return Task.CompletedTask;
+        }
     }
 
     private static Utilisateur CreerAvecMotDePasse(string email, RoleUtilisateur role, string motDePasse)

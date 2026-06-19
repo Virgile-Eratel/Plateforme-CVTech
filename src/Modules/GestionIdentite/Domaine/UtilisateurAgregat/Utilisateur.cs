@@ -48,6 +48,21 @@ public sealed class Utilisateur : RacineAgregat<Guid>
         };
     }
 
+    /// <summary>
+    /// Réhydrate un agrégat depuis la persistance (mapper Infrastructure). Ne revalide pas les
+    /// invariants : les données proviennent d'un état déjà validé lors de leur création.
+    /// </summary>
+    public static Utilisateur Reconstituer(
+        Guid id, string email, RoleUtilisateur role, bool estBloque, string? motDePasseHash) =>
+        new()
+        {
+            Id = id,
+            Email = email,
+            Role = role,
+            EstBloque = estBloque,
+            MotDePasseHash = motDePasseHash
+        };
+
     /// <summary>Associe une empreinte de mot de passe au compte (déjà hachée par l'infrastructure).</summary>
     public void DefinirMotDePasse(string hash)
     {

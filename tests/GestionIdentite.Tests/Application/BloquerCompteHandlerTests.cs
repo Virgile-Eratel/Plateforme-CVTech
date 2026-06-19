@@ -50,6 +50,6 @@ public class BloquerCompteHandlerTests
 
         // Assert
         cible.EstBloque.Should().BeTrue();
-        await _depot.Received(1).EnregistrerAsync(Arg.Any<CancellationToken>());
+        await _depot.Received(1).MettreAJourAsync(cible, Arg.Any<CancellationToken>());
     }
 }

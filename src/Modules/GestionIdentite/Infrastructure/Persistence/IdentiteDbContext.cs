@@ -1,4 +1,4 @@
-using CVTech.Modules.GestionIdentite.Domaine;
+using CVTech.Modules.GestionIdentite.Infrastructure.Persistence.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace CVTech.Modules.GestionIdentite.Infrastructure.Persistence;
@@ -11,7 +11,7 @@ public sealed class IdentiteDbContext(DbContextOptions<IdentiteDbContext> option
 {
     public const string Schema = "identite";
 
-    public DbSet<Utilisateur> Utilisateurs => Set<Utilisateur>();
+    public DbSet<UtilisateurEntity> Utilisateurs => Set<UtilisateurEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

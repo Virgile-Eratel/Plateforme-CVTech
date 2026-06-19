@@ -1,5 +1,7 @@
 using MediatR;
 
+using CVTech.Modules.GestionIdentite.Domaine;
+
 namespace CVTech.Modules.GestionIdentite.Application.Features.Authentifier;
 
 public sealed class AuthentifierHandler(IDepotUtilisateurs depot, IHacheurMotDePasse hacheur)

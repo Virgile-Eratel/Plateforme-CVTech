@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Modules\GestionIdentite\Module\CVTech.Modules.GestionIdentite.csproj" />
+    <ProjectReference Include="..\..\src\Modules\GestionIdentite\CVTech.Modules.GestionIdentite.csproj" />
     <ProjectReference Include="..\..\src\Modules\GestionIdentite\Contracts\CVTech.Modules.GestionIdentite.Contracts.csproj" />
     <ProjectReference Include="..\..\src\SharedKernel\CVTech.SharedKernel.csproj" />
   </ItemGroup>
