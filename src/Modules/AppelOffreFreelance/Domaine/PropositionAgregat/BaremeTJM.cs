@@ -17,6 +17,9 @@ public sealed class BaremeTJM : ObjetValeur
         return new BaremeTJM(montant);
     }
 
+    /// <summary>Reconstruit le VO depuis la persistance, sans revalider les invariants.</summary>
+    public static BaremeTJM Reconstituer(decimal montantJournalier) => new(montantJournalier);
+
     protected override IEnumerable<object?> ComposantsEgalite()
     {
         yield return MontantJournalier;

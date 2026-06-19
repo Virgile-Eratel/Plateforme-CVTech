@@ -35,6 +35,31 @@ public sealed class AppelOffre : RacineAgregat<Guid>
         };
     }
 
+    /// <summary>
+    /// Réhydrate un agrégat depuis la persistance (mapper Infrastructure). Ne revalide pas les
+    /// invariants : préserve fidèlement l'état persisté (statut, lauréat sélectionné, etc.).
+    /// </summary>
+    public static AppelOffre Reconstituer(
+        Guid id,
+        Guid entrepriseId,
+        string titre,
+        CahierDesCharges cahierDesCharges,
+        DomaineMetier domaine,
+        StatutAppelOffre statut,
+        Guid? propositionLaureateId,
+        DateTimeOffset datePublication) =>
+        new()
+        {
+            Id = id,
+            EntrepriseId = entrepriseId,
+            Titre = titre,
+            CahierDesCharges = cahierDesCharges,
+            Domaine = domaine,
+            Statut = statut,
+            PropositionLaureateId = propositionLaureateId,
+            DatePublication = datePublication
+        };
+
     public void SelectionnerLaureat(Guid propositionId)
     {
         if (Statut == StatutAppelOffre.Attribue)

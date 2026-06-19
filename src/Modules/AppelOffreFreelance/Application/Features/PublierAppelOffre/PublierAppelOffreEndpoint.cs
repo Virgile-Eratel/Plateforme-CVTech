@@ -14,13 +14,12 @@ public sealed class PublierAppelOffreEndpoint : IEndpoint
     public void Map(IEndpointRouteBuilder routes) =>
         routes.MapPost("/appels-offre",
             async (PublierAppelOffreRequete r, ClaimsPrincipal u, ISender sender) =>
-                await EndpointHttp.Executer(async () =>
-                {
-                    var id = await sender.Send(new PublierAppelOffreCommand(
-                        u.IdUtilisateur(), r.Titre, r.Contexte, r.Livrables, r.Deadline,
-                        r.BudgetMin, r.BudgetMax, r.DomaineLibelle));
-                    return Results.Created($"/freelance/appels-offre/{id}", new { id });
-                })).RequireAuthorization();
+            {
+                var id = await sender.Send(new PublierAppelOffreCommand(
+                    u.IdUtilisateur(), r.Titre, r.Contexte, r.Livrables, r.Deadline,
+                    r.BudgetMin, r.BudgetMax, r.DomaineLibelle));
+                return Results.Created($"/freelance/appels-offre/{id}", new { id });
+            }).RequireAuthorization();
 }
 
 public sealed record PublierAppelOffreRequete(

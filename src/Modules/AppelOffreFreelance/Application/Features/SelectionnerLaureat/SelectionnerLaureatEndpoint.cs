@@ -14,11 +14,10 @@ public sealed class SelectionnerLaureatEndpoint : IEndpoint
     public void Map(IEndpointRouteBuilder routes) =>
         routes.MapPost("/appels-offre/{appelOffreId:guid}/laureat",
             async (Guid appelOffreId, SelectionnerLaureatRequete r, ClaimsPrincipal u, ISender sender) =>
-                await EndpointHttp.Executer(async () =>
-                {
-                    await sender.Send(new SelectionnerLaureatCommand(u.IdUtilisateur(), appelOffreId, r.PropositionId));
-                    return Results.NoContent();
-                })).RequireAuthorization();
+            {
+                await sender.Send(new SelectionnerLaureatCommand(u.IdUtilisateur(), appelOffreId, r.PropositionId));
+                return Results.NoContent();
+            }).RequireAuthorization();
 }
 
 public sealed record SelectionnerLaureatRequete(Guid PropositionId);

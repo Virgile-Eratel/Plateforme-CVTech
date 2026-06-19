@@ -1,12 +1,13 @@
-using CVTech.Modules.AppelOffreFreelance.Domaine;
+using CVTech.Modules.AppelOffreFreelance.Infrastructure.Persistence.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace CVTech.Modules.AppelOffreFreelance.Infrastructure.Persistence.Configurations;
 
-public sealed class PropositionFreelanceConfiguration : IEntityTypeConfiguration<PropositionFreelance>
+/// <summary>Mapping relationnel de l'entité de persistance <see cref="PropositionFreelanceEntity"/>.</summary>
+public sealed class PropositionFreelanceConfiguration : IEntityTypeConfiguration<PropositionFreelanceEntity>
 {
-    public void Configure(EntityTypeBuilder<PropositionFreelance> builder)
+    public void Configure(EntityTypeBuilder<PropositionFreelanceEntity> builder)
     {
         builder.ToTable("Propositions");
         builder.HasKey(p => p.Id);
@@ -18,11 +19,7 @@ public sealed class PropositionFreelanceConfiguration : IEntityTypeConfiguration
         builder.Property(p => p.Methodologie).HasMaxLength(4000);
         builder.Property(p => p.DateSoumission).IsRequired();
 
-        // Objet de Valeur BaremeTJM (owned type).
-        builder.OwnsOne(p => p.Tjm, t =>
-            t.Property(x => x.MontantJournalier).HasColumnName("Tjm").HasPrecision(18, 2));
-        builder.Navigation(p => p.Tjm).IsRequired();
-
-        builder.Ignore(p => p.EvenementsNonPublies);
+        // Value object BaremeTJM (aplati en colonne).
+        builder.Property(p => p.Tjm).HasColumnName("Tjm").HasPrecision(18, 2);
     }
 }

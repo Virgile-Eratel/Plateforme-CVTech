@@ -43,7 +43,6 @@ public sealed class SoumettrePropositionHandler(
             commande.Methodologie);
 
         await depotPropositions.AjouterAsync(proposition, ct);
-        await depotPropositions.EnregistrerAsync(ct);
 
         return proposition.Id;
     }

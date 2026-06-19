@@ -1,12 +1,13 @@
-using CVTech.Modules.AppelOffreFreelance.Domaine;
+using CVTech.Modules.AppelOffreFreelance.Infrastructure.Persistence.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace CVTech.Modules.AppelOffreFreelance.Infrastructure.Persistence.Configurations;
 
-public sealed class AppelOffreConfiguration : IEntityTypeConfiguration<AppelOffre>
+/// <summary>Mapping relationnel de l'entité de persistance <see cref="AppelOffreEntity"/>.</summary>
+public sealed class AppelOffreConfiguration : IEntityTypeConfiguration<AppelOffreEntity>
 {
-    public void Configure(EntityTypeBuilder<AppelOffre> builder)
+    public void Configure(EntityTypeBuilder<AppelOffreEntity> builder)
     {
         builder.ToTable("AppelsOffre");
         builder.HasKey(a => a.Id);
@@ -18,25 +19,15 @@ public sealed class AppelOffreConfiguration : IEntityTypeConfiguration<AppelOffr
         builder.Property(a => a.PropositionLaureateId);
         builder.Property(a => a.DatePublication).IsRequired();
 
-        // Objet de Valeur CahierDesCharges (owned type).
-        builder.OwnsOne(a => a.CahierDesCharges, c =>
-        {
-            c.Property(x => x.Contexte).HasColumnName("Contexte").IsRequired().HasMaxLength(4000);
-            c.Property(x => x.Livrables).HasColumnName("Livrables").IsRequired().HasMaxLength(4000);
-            c.Property(x => x.Deadline).HasColumnName("Deadline").IsRequired();
-            c.Property(x => x.BudgetMin).HasColumnName("BudgetMin").HasPrecision(18, 2);
-            c.Property(x => x.BudgetMax).HasColumnName("BudgetMax").HasPrecision(18, 2);
-        });
-        builder.Navigation(a => a.CahierDesCharges).IsRequired();
+        // Value object CahierDesCharges (aplati en colonnes).
+        builder.Property(a => a.Contexte).HasColumnName("Contexte").IsRequired().HasMaxLength(4000);
+        builder.Property(a => a.Livrables).HasColumnName("Livrables").IsRequired().HasMaxLength(4000);
+        builder.Property(a => a.Deadline).HasColumnName("Deadline").IsRequired();
+        builder.Property(a => a.BudgetMin).HasColumnName("BudgetMin").HasPrecision(18, 2);
+        builder.Property(a => a.BudgetMax).HasColumnName("BudgetMax").HasPrecision(18, 2);
 
-        // Objet de Valeur partagé DomaineMetier (owned type).
-        builder.OwnsOne(a => a.Domaine, d =>
-        {
-            d.Property(x => x.Code).HasColumnName("DomaineCode").IsRequired().HasMaxLength(120);
-            d.Property(x => x.Libelle).HasColumnName("DomaineLibelle").IsRequired().HasMaxLength(120);
-        });
-        builder.Navigation(a => a.Domaine).IsRequired();
-
-        builder.Ignore(a => a.EvenementsNonPublies);
+        // Value object partagé DomaineMetier (aplati en colonnes).
+        builder.Property(a => a.DomaineCode).HasColumnName("DomaineCode").IsRequired().HasMaxLength(120);
+        builder.Property(a => a.DomaineLibelle).HasColumnName("DomaineLibelle").IsRequired().HasMaxLength(120);
     }
 }

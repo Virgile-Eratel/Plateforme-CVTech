@@ -1,5 +1,7 @@
 using MediatR;
 
+using CVTech.Modules.AppelOffreFreelance.Domaine;
+
 namespace CVTech.Modules.AppelOffreFreelance.Application.Features.ListerAppelsOffre;
 
 /// <summary>Consultation publique des appels d'offre : action anonyme, sans permission.</summary>

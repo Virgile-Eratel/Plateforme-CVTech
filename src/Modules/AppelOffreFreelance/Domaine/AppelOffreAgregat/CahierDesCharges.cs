@@ -34,6 +34,11 @@ public sealed class CahierDesCharges : ObjetValeur
         return new CahierDesCharges(contexte.Trim(), livrables.Trim(), deadline, budgetMin, budgetMax);
     }
 
+    /// <summary>Reconstruit le VO depuis la persistance, sans revalider les invariants.</summary>
+    public static CahierDesCharges Reconstituer(
+        string contexte, string livrables, DateTimeOffset deadline, decimal budgetMin, decimal budgetMax) =>
+        new(contexte, livrables, deadline, budgetMin, budgetMax);
+
     protected override IEnumerable<object?> ComposantsEgalite()
     {
         yield return Contexte;

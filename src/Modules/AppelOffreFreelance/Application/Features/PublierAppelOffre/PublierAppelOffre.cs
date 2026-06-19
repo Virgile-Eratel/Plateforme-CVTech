@@ -46,7 +46,6 @@ public sealed class PublierAppelOffreHandler(
         var appelOffre = AppelOffre.Publier(commande.EntrepriseId, commande.Titre, cahier, domaine);
 
         await depot.AjouterAsync(appelOffre, ct);
-        await depot.EnregistrerAsync(ct);
 
         await bus.PublierAsync(
             new AppelOffrePublie(

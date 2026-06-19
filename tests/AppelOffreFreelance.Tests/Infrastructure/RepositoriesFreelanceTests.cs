@@ -9,12 +9,12 @@ using Xunit;
 
 namespace CVTech.Modules.AppelOffreFreelance.Tests.Infrastructure;
 
-/// <summary>Persistance EF Core (SQLite) : owned types CahierDesCharges, BaremeTJM, DomaineMetier.</summary>
-public class DepotsFreelanceEfCoreTests : IDisposable
+/// <summary>Persistance EF Core (SQLite) : value objects aplatis CahierDesCharges, BaremeTJM, DomaineMetier.</summary>
+public class RepositoriesFreelanceTests : IDisposable
 {
     private readonly SqliteConnection _connexion;
 
-    public DepotsFreelanceEfCoreTests()
+    public RepositoriesFreelanceTests()
     {
         _connexion = new SqliteConnection("DataSource=:memory:");
         _connexion.Open();
@@ -36,12 +36,11 @@ public class DepotsFreelanceEfCoreTests : IDisposable
             Guid.NewGuid(), "Mission cloud", CahierExemple(), DomaineMetier.Creer("Cloud Azure"));
         await using (var ctx = CreerContexte())
         {
-            await new DepotAppelsOffreEfCore(ctx).AjouterAsync(appel);
-            await new DepotAppelsOffreEfCore(ctx).EnregistrerAsync();
+            await new AppelOffreRepository(ctx).AjouterAsync(appel);
         }
 
         await using var lecture = CreerContexte();
-        var relu = await new DepotAppelsOffreEfCore(lecture).ObtenirAsync(appel.Id);
+        var relu = await new AppelOffreRepository(lecture).ObtenirAsync(appel.Id);
 
         relu.Should().NotBeNull();
         relu!.Titre.Should().Be("Mission cloud");
@@ -60,16 +59,15 @@ public class DepotsFreelanceEfCoreTests : IDisposable
         var laureat = Guid.NewGuid();
         await using (var ctx = CreerContexte())
         {
-            var depot = new DepotAppelsOffreEfCore(ctx);
+            var depot = new AppelOffreRepository(ctx);
             await depot.AjouterAsync(appel);
-            await depot.EnregistrerAsync();
             var charge = await depot.ObtenirAsync(appel.Id);
             charge!.SelectionnerLaureat(laureat);
-            await depot.EnregistrerAsync();
+            await depot.MettreAJourAsync(charge);
         }
 
         await using var lecture = CreerContexte();
-        var relu = await new DepotAppelsOffreEfCore(lecture).ObtenirAsync(appel.Id);
+        var relu = await new AppelOffreRepository(lecture).ObtenirAsync(appel.Id);
 
         relu!.Statut.Should().Be(StatutAppelOffre.Attribue);
         relu.PropositionLaureateId.Should().Be(laureat);
@@ -82,12 +80,11 @@ public class DepotsFreelanceEfCoreTests : IDisposable
             Guid.NewGuid(), Guid.NewGuid(), BaremeTJM.Creer(650m), 20, "Approche agile");
         await using (var ctx = CreerContexte())
         {
-            await new DepotPropositionsEfCore(ctx).AjouterAsync(proposition);
-            await new DepotPropositionsEfCore(ctx).EnregistrerAsync();
+            await new PropositionRepository(ctx).AjouterAsync(proposition);
         }
 
         await using var lecture = CreerContexte();
-        var relu = await new DepotPropositionsEfCore(lecture).ObtenirAsync(proposition.Id);
+        var relu = await new PropositionRepository(lecture).ObtenirAsync(proposition.Id);
 
         relu.Should().NotBeNull();
         relu!.Tjm.MontantJournalier.Should().Be(650m);

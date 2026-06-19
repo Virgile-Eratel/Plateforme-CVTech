@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Modules\AppelOffreFreelance\Module\CVTech.Modules.AppelOffreFreelance.csproj" />
+    <ProjectReference Include="..\..\src\Modules\AppelOffreFreelance\CVTech.Modules.AppelOffreFreelance.csproj" />
     <ProjectReference Include="..\..\src\Modules\AppelOffreFreelance\Contracts\CVTech.Modules.AppelOffreFreelance.Contracts.csproj" />
     <ProjectReference Include="..\..\src\Modules\GestionIdentite\Contracts\CVTech.Modules.GestionIdentite.Contracts.csproj" />
     <ProjectReference Include="..\..\src\SharedKernel\CVTech.SharedKernel.csproj" />

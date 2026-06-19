@@ -1,5 +1,5 @@
-using CVTech.Modules.AppelOffreFreelance.Domaine;
 using CVTech.Modules.AppelOffreFreelance.Infrastructure.Persistence.Conventions;
+using CVTech.Modules.AppelOffreFreelance.Infrastructure.Persistence.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace CVTech.Modules.AppelOffreFreelance.Infrastructure.Persistence;
@@ -9,8 +9,8 @@ public sealed class FreelanceDbContext(DbContextOptions<FreelanceDbContext> opti
 {
     public const string Schema = "freelance";
 
-    public DbSet<AppelOffre> AppelsOffre => Set<AppelOffre>();
-    public DbSet<PropositionFreelance> Propositions => Set<PropositionFreelance>();
+    public DbSet<AppelOffreEntity> AppelsOffre => Set<AppelOffreEntity>();
+    public DbSet<PropositionFreelanceEntity> Propositions => Set<PropositionFreelanceEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

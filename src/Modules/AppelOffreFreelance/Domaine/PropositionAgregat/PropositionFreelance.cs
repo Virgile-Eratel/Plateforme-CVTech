@@ -14,6 +14,26 @@ public sealed class PropositionFreelance : RacineAgregat<Guid>
 
     private PropositionFreelance() { }
 
+    /// <summary>Réhydrate l'agrégat depuis la persistance (mapper Infrastructure), sans revalider les invariants.</summary>
+    public static PropositionFreelance Reconstituer(
+        Guid id,
+        Guid appelOffreId,
+        Guid candidatId,
+        BaremeTJM tjm,
+        int dureeJours,
+        string methodologie,
+        DateTimeOffset dateSoumission) =>
+        new()
+        {
+            Id = id,
+            AppelOffreId = appelOffreId,
+            CandidatId = candidatId,
+            Tjm = tjm,
+            DureeJours = dureeJours,
+            Methodologie = methodologie,
+            DateSoumission = dateSoumission
+        };
+
     public static PropositionFreelance Soumettre(
         Guid appelOffreId, Guid candidatId, BaremeTJM tjm, int dureeJours, string methodologie)
     {

@@ -7,6 +7,8 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
+using CVTech.Modules.AppelOffreFreelance.Domaine;
+
 namespace CVTech.Modules.AppelOffreFreelance;
 
 public static class AppelOffreFreelanceLoader
@@ -21,13 +23,12 @@ public static class AppelOffreFreelanceLoader
 
         // Persistance EF Core / Azure SQL (schéma « freelance »).
         services.AddDbContext<FreelanceDbContext>(configurerBdd);
-        services.AddScoped<IDepotAppelsOffre, DepotAppelsOffreEfCore>();
-        services.AddScoped<IDepotPropositions, DepotPropositionsEfCore>();
+        services.AddScoped<IDepotAppelsOffre, AppelOffreRepository>();
+        services.AddScoped<IDepotPropositions, PropositionRepository>();
 
-        // Endpoints des vertical slices (un IEndpoint par feature, défini dans Application).
-        foreach (var type in assembly.GetTypes()
-                     .Where(t => t is { IsClass: true, IsAbstract: false } && typeof(IEndpoint).IsAssignableFrom(t)))
-            services.AddSingleton(typeof(IEndpoint), type);
+        // Port de sortie de l'adaptateur HTTP (traduction exception métier → réponse).
+        // Les endpoints (IEndpoint) sont, eux, découverts par le wiring (Client), pas via DI.
+        services.AddSingleton<IPresentateur, PresentateurHttp>();
 
         return services;
     }

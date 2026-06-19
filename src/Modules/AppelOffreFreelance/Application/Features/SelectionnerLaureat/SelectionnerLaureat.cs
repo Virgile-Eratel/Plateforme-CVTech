@@ -44,6 +44,6 @@ public sealed class SelectionnerLaureatHandler(
             throw new InvalidOperationException("Cette proposition ne concerne pas cet appel d'offre.");
 
         appelOffre.SelectionnerLaureat(proposition.Id);
-        await depotAppels.EnregistrerAsync(ct);
+        await depotAppels.MettreAJourAsync(appelOffre, ct);
     }
 }
