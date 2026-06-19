@@ -1,11 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <ItemGroup>
-    <ProjectReference Include="..\Modules\GestionIdentite\Module\CVTech.Modules.GestionIdentite.csproj" />
+    <ProjectReference Include="..\Modules\GestionIdentite\CVTech.Modules.GestionIdentite.csproj" />
     <ProjectReference Include="..\Modules\GestionIdentite\Contracts\CVTech.Modules.GestionIdentite.Contracts.csproj" />
-    <ProjectReference Include="..\Modules\CatalogueEmploi\Module\CVTech.Modules.CatalogueEmploi.csproj" />
-    <ProjectReference Include="..\Modules\AppelOffreFreelance\Module\CVTech.Modules.AppelOffreFreelance.csproj" />
-    <ProjectReference Include="..\Modules\ActualiteEtAbonnement\Module\CVTech.Modules.ActualiteEtAbonnement.csproj" />
+    <ProjectReference Include="..\Modules\CatalogueEmploi\CVTech.Modules.CatalogueEmploi.csproj" />
+    <ProjectReference Include="..\Modules\AppelOffreFreelance\CVTech.Modules.AppelOffreFreelance.csproj" />
+    <ProjectReference Include="..\Modules\ActualiteEtAbonnement\CVTech.Modules.ActualiteEtAbonnement.csproj" />
     <ProjectReference Include="..\Web\CVTech.Web.csproj" />
   </ItemGroup>
 

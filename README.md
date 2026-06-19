@@ -29,7 +29,7 @@ dotnet restore CVTech.slnx
 dotnet build   CVTech.slnx
 
 # 3. Lancer les tests (doivent être au vert avant de démarrer)
-dotnet test CVTech.slnx          # 51 tests
+dotnet test CVTech.slnx          # 68 tests
 
 # 4. Démarrer l'application (API + front Blazor servis ensemble)
 dotnet run --project src/Api/CVTech.Api.csproj
