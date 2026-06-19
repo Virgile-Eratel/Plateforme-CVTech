@@ -1,5 +1,5 @@
-using CVTech.Modules.ActualiteEtAbonnement.Domaine;
 using CVTech.Modules.ActualiteEtAbonnement.Infrastructure.Persistence.Conventions;
+using CVTech.Modules.ActualiteEtAbonnement.Infrastructure.Persistence.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace CVTech.Modules.ActualiteEtAbonnement.Infrastructure.Persistence;
@@ -9,9 +9,9 @@ public sealed class ActualiteDbContext(DbContextOptions<ActualiteDbContext> opti
 {
     public const string Schema = "actualite";
 
-    public DbSet<ArticleActualite> Articles => Set<ArticleActualite>();
-    public DbSet<Abonnement> Abonnements => Set<Abonnement>();
-    public DbSet<Notification> Notifications => Set<Notification>();
+    public DbSet<ArticleActualiteEntity> Articles => Set<ArticleActualiteEntity>();
+    public DbSet<AbonnementEntity> Abonnements => Set<AbonnementEntity>();
+    public DbSet<NotificationEntity> Notifications => Set<NotificationEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

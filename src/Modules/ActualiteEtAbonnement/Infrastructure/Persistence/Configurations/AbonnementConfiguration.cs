@@ -1,13 +1,12 @@
-using CVTech.Modules.ActualiteEtAbonnement.Domaine;
-using CVTech.SharedKernel.Domaine;
+using CVTech.Modules.ActualiteEtAbonnement.Infrastructure.Persistence.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace CVTech.Modules.ActualiteEtAbonnement.Infrastructure.Persistence.Configurations;
 
-public sealed class AbonnementConfiguration : IEntityTypeConfiguration<Abonnement>
+public sealed class AbonnementConfiguration : IEntityTypeConfiguration<AbonnementEntity>
 {
-    public void Configure(EntityTypeBuilder<Abonnement> builder)
+    public void Configure(EntityTypeBuilder<AbonnementEntity> builder)
     {
         builder.ToTable("Abonnements");
         builder.HasKey(a => a.Id);
@@ -17,9 +16,8 @@ public sealed class AbonnementConfiguration : IEntityTypeConfiguration<Abonnemen
         builder.HasIndex(a => a.UtilisateurId).IsUnique();
         builder.Property(a => a.Canal).HasConversion<string>().HasMaxLength(20).IsRequired();
 
-        // La propriété calculée Domaines est ignorée : on mappe le champ possédé _domaines.
-        builder.Ignore(a => a.Domaines);
-        builder.OwnsMany<DomaineMetier>("_domaines", d =>
+        // Collection possédée des domaines suivis (table AbonnementDomaines, schéma préservé).
+        builder.OwnsMany(a => a.Domaines, d =>
         {
             d.ToTable("AbonnementDomaines");
             d.WithOwner().HasForeignKey("AbonnementId");
@@ -27,7 +25,5 @@ public sealed class AbonnementConfiguration : IEntityTypeConfiguration<Abonnemen
             d.Property(x => x.Libelle).HasColumnName("Libelle").IsRequired().HasMaxLength(120);
             d.HasKey("AbonnementId", "Code");
         });
-
-        builder.Ignore(a => a.EvenementsNonPublies);
     }
 }

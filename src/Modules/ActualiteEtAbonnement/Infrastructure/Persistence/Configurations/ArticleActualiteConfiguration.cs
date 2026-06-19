@@ -1,12 +1,12 @@
-using CVTech.Modules.ActualiteEtAbonnement.Domaine;
+using CVTech.Modules.ActualiteEtAbonnement.Infrastructure.Persistence.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace CVTech.Modules.ActualiteEtAbonnement.Infrastructure.Persistence.Configurations;
 
-public sealed class ArticleActualiteConfiguration : IEntityTypeConfiguration<ArticleActualite>
+public sealed class ArticleActualiteConfiguration : IEntityTypeConfiguration<ArticleActualiteEntity>
 {
-    public void Configure(EntityTypeBuilder<ArticleActualite> builder)
+    public void Configure(EntityTypeBuilder<ArticleActualiteEntity> builder)
     {
         builder.ToTable("Articles");
         builder.HasKey(a => a.Id);
@@ -18,20 +18,12 @@ public sealed class ArticleActualiteConfiguration : IEntityTypeConfiguration<Art
         builder.Property(a => a.Categorie).HasConversion<string>().HasMaxLength(40).IsRequired();
         builder.Property(a => a.DatePublication).IsRequired();
 
-        // Domaine métier : owned type OPTIONNEL (un article éditorial peut n'en cibler aucun).
-        builder.OwnsOne(a => a.Domaine, d =>
-        {
-            d.Property(x => x.Code).HasColumnName("DomaineCode").HasMaxLength(120);
-            d.Property(x => x.Libelle).HasColumnName("DomaineLibelle").HasMaxLength(120);
-        });
+        // Domaine métier optionnel : colonnes plates nullables (un article peut n'en cibler aucun).
+        builder.Property(a => a.DomaineCode).HasColumnName("DomaineCode").HasMaxLength(120);
+        builder.Property(a => a.DomaineLibelle).HasColumnName("DomaineLibelle").HasMaxLength(120);
 
-        // Source externe : owned type OPTIONNEL.
-        builder.OwnsOne(a => a.Source, s =>
-        {
-            s.Property(x => x.Nom).HasColumnName("SourceNom").HasMaxLength(200);
-            s.Property(x => x.Url).HasColumnName("SourceUrl").HasMaxLength(500);
-        });
-
-        builder.Ignore(a => a.EvenementsNonPublies);
+        // Source externe optionnelle : colonnes plates nullables.
+        builder.Property(a => a.SourceNom).HasColumnName("SourceNom").HasMaxLength(200);
+        builder.Property(a => a.SourceUrl).HasColumnName("SourceUrl").HasMaxLength(500);
     }
 }

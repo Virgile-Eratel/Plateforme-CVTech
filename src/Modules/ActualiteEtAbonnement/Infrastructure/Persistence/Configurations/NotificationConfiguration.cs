@@ -1,12 +1,12 @@
-using CVTech.Modules.ActualiteEtAbonnement.Domaine;
+using CVTech.Modules.ActualiteEtAbonnement.Infrastructure.Persistence.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace CVTech.Modules.ActualiteEtAbonnement.Infrastructure.Persistence.Configurations;
 
-public sealed class NotificationConfiguration : IEntityTypeConfiguration<Notification>
+public sealed class NotificationConfiguration : IEntityTypeConfiguration<NotificationEntity>
 {
-    public void Configure(EntityTypeBuilder<Notification> builder)
+    public void Configure(EntityTypeBuilder<NotificationEntity> builder)
     {
         builder.ToTable("Notifications");
         builder.HasKey(n => n.Id);
@@ -19,7 +19,5 @@ public sealed class NotificationConfiguration : IEntityTypeConfiguration<Notific
         builder.Property(n => n.Canal).HasConversion<string>().HasMaxLength(20).IsRequired();
         builder.Property(n => n.DateCreation).IsRequired();
         builder.Property(n => n.Lu).IsRequired();
-
-        builder.Ignore(n => n.EvenementsNonPublies);
     }
 }

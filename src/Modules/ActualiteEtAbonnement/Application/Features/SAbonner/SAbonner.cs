@@ -40,6 +40,5 @@ public sealed class SAbonnerHandler(
             abonnement.AjouterDomaines(domaines);
 
         await depot.AjouterOuMettreAJourAsync(abonnement, ct);
-        await depot.EnregistrerAsync(ct);
     }
 }

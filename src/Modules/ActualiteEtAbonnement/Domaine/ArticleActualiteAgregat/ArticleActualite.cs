@@ -43,4 +43,29 @@ public sealed class ArticleActualite : RacineAgregat<Guid>
             DatePublication = DateTimeOffset.UtcNow
         };
     }
+
+    /// <summary>
+    /// Réhydrate l'agrégat depuis la persistance (mapper Infrastructure). Ne revalide pas
+    /// les invariants : les données proviennent d'un état déjà validé à la création.
+    /// </summary>
+    public static ArticleActualite Reconstituer(
+        Guid id,
+        Guid auteurId,
+        string titre,
+        string contenu,
+        CategorieEditoriale categorie,
+        DateTimeOffset datePublication,
+        DomaineMetier? domaine = null,
+        SourceExterne? source = null) =>
+        new()
+        {
+            Id = id,
+            AuteurId = auteurId,
+            Titre = titre,
+            Contenu = contenu,
+            Categorie = categorie,
+            Domaine = domaine,
+            Source = source,
+            DatePublication = datePublication
+        };
 }

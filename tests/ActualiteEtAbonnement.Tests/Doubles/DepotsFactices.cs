@@ -13,6 +13,7 @@ public sealed class DepotAbonnementsFactice : IDepotAbonnements
 
     public Task AjouterOuMettreAJourAsync(Abonnement abonnement, CancellationToken ct = default)
     {
+        // Sémantique upsert : un abonnement par utilisateur.
         _parUtilisateur[abonnement.UtilisateurId] = abonnement;
         return Task.CompletedTask;
     }
@@ -25,8 +26,6 @@ public sealed class DepotAbonnementsFactice : IDepotAbonnements
             .ToList();
         return Task.FromResult<IReadOnlyList<Guid>>(abonnes);
     }
-
-    public Task EnregistrerAsync(CancellationToken ct = default) => Task.CompletedTask;
 }
 
 /// <summary>Faux dépôt de notifications (test unitaire du handler, sans base réelle).</summary>
@@ -46,5 +45,10 @@ public sealed class DepotNotificationsFactice : IDepotNotifications
         return Task.FromResult<IReadOnlyList<Notification>>(resultat);
     }
 
-    public Task EnregistrerAsync(CancellationToken ct = default) => Task.CompletedTask;
+    public Task MettreAJourAsync(Notification notification, CancellationToken ct = default)
+    {
+        var index = _notifications.FindIndex(n => n.Id == notification.Id);
+        if (index >= 0) _notifications[index] = notification;
+        return Task.CompletedTask;
+    }
 }

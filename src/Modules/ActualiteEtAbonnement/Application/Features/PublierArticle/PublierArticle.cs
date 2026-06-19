@@ -46,7 +46,6 @@ public sealed class PublierArticleHandler(
             commande.AuteurId, commande.Titre, commande.Contenu, commande.Categorie, domaine, source);
 
         await depot.AjouterAsync(article, ct);
-        await depot.EnregistrerAsync(ct);
 
         return article.Id;
     }

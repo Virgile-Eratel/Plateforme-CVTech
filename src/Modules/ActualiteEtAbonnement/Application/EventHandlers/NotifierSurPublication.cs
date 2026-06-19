@@ -27,7 +27,6 @@ internal static class DiffuseurNotifications
             await notifications.AjouterAsync(notification, ct);
             await notificateur.PousserAsync(destinataireId, notification, ct);
         }
-        await notifications.EnregistrerAsync(ct);
     }
 }
 

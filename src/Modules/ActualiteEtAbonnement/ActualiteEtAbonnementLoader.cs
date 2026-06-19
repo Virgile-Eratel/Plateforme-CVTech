@@ -1,10 +1,13 @@
 using CVTech.Modules.ActualiteEtAbonnement.Application;
+using CVTech.Modules.ActualiteEtAbonnement.Client;
 using CVTech.Modules.ActualiteEtAbonnement.Infrastructure;
 using CVTech.Modules.ActualiteEtAbonnement.Infrastructure.Persistence;
 using FluentValidation;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+
+using CVTech.Modules.ActualiteEtAbonnement.Domaine;
 
 namespace CVTech.Modules.ActualiteEtAbonnement;
 
@@ -23,12 +26,16 @@ public static class ActualiteEtAbonnementLoader
 
         // Persistance EF Core / Azure SQL (schéma « actualite »).
         services.AddDbContext<ActualiteDbContext>(configurerBdd);
-        services.AddScoped<IDepotArticles, DepotArticlesEfCore>();
-        services.AddScoped<IDepotAbonnements, DepotAbonnementsEfCore>();
-        services.AddScoped<IDepotNotifications, DepotNotificationsEfCore>();
+        services.AddScoped<IDepotArticles, ArticleRepository>();
+        services.AddScoped<IDepotAbonnements, AbonnementRepository>();
+        services.AddScoped<IDepotNotifications, NotificationRepository>();
 
         services.AddSingleton<IGenerateurRss, GenerateurRss>();
         services.AddScoped<INotificateurTempsReel, NotificateurSignalR>();
+
+        // Port de sortie de l'adaptateur HTTP (traduction exception métier → réponse).
+        // Les endpoints (IEndpoint) sont, eux, découverts par le wiring (Client), pas via DI.
+        services.AddSingleton<IPresentateur, PresentateurHttp>();
 
         return services;
     }

@@ -10,14 +10,14 @@ using Xunit;
 namespace CVTech.Modules.ActualiteEtAbonnement.Tests.Infrastructure;
 
 /// <summary>
-/// Persistance EF Core (SQLite) : owned types nullables (DomaineMetier, SourceExterne)
-/// et collection possédée _domaines de l'agrégat Abonnement.
+/// Persistance EF Core (SQLite) via entités plates + mappers : VO optionnels (DomaineMetier,
+/// SourceExterne) aplatis en colonnes nullables, et collection de domaines de l'agrégat Abonnement.
 /// </summary>
-public class DepotsActualiteEfCoreTests : IDisposable
+public class ActualiteRepositoriesTests : IDisposable
 {
     private readonly SqliteConnection _connexion;
 
-    public DepotsActualiteEfCoreTests()
+    public ActualiteRepositoriesTests()
     {
         _connexion = new SqliteConnection("DataSource=:memory:");
         _connexion.Open();
@@ -36,12 +36,11 @@ public class DepotsActualiteEfCoreTests : IDisposable
             DomaineMetier.Creer("Cloud Azure"), SourceExterne.Creer("InfoQ", "https://infoq.com"));
         await using (var ctx = CreerContexte())
         {
-            await new DepotArticlesEfCore(ctx).AjouterAsync(article);
-            await new DepotArticlesEfCore(ctx).EnregistrerAsync();
+            await new ArticleRepository(ctx).AjouterAsync(article);
         }
 
         await using var lecture = CreerContexte();
-        var relus = await new DepotArticlesEfCore(lecture).ListerAsync("cloud-azure");
+        var relus = await new ArticleRepository(lecture).ListerAsync("cloud-azure");
 
         relus.Should().ContainSingle();
         var relu = relus[0];
@@ -57,12 +56,11 @@ public class DepotsActualiteEfCoreTests : IDisposable
             Guid.NewGuid(), "Édito libre", "Sans domaine", CategorieEditoriale.RetourExperience);
         await using (var ctx = CreerContexte())
         {
-            await new DepotArticlesEfCore(ctx).AjouterAsync(article);
-            await new DepotArticlesEfCore(ctx).EnregistrerAsync();
+            await new ArticleRepository(ctx).AjouterAsync(article);
         }
 
         await using var lecture = CreerContexte();
-        var relus = await new DepotArticlesEfCore(lecture).ListerAsync();
+        var relus = await new ArticleRepository(lecture).ListerAsync();
 
         relus.Should().ContainSingle();
         relus[0].Domaine.Should().BeNull();
@@ -77,12 +75,11 @@ public class DepotsActualiteEfCoreTests : IDisposable
             utilisateur, [DomaineMetier.Creer("Cloud Azure"), DomaineMetier.Creer("Data Science")]);
         await using (var ctx = CreerContexte())
         {
-            await new DepotAbonnementsEfCore(ctx).AjouterOuMettreAJourAsync(abonnement);
-            await new DepotAbonnementsEfCore(ctx).EnregistrerAsync();
+            await new AbonnementRepository(ctx).AjouterOuMettreAJourAsync(abonnement);
         }
 
         await using var lecture = CreerContexte();
-        var depot = new DepotAbonnementsEfCore(lecture);
+        var depot = new AbonnementRepository(lecture);
         var relu = await depot.ObtenirParUtilisateurAsync(utilisateur);
         var abonnesCloud = await depot.ListerAbonnesAuDomaineAsync("cloud-azure");
 
@@ -93,18 +90,40 @@ public class DepotsActualiteEfCoreTests : IDisposable
     }
 
     [Fact]
+    public async Task UnSecondAbonnementDuMemeUtilisateurEstFusionne()
+    {
+        // Sémantique upsert préservée : un seul abonnement par utilisateur, domaines cumulés.
+        var utilisateur = Guid.NewGuid();
+        await using (var ctx = CreerContexte())
+            await new AbonnementRepository(ctx).AjouterOuMettreAJourAsync(
+                Abonnement.Creer(utilisateur, [DomaineMetier.Creer("Cloud Azure")]));
+
+        await using (var ctx = CreerContexte())
+        {
+            var depot = new AbonnementRepository(ctx);
+            var existant = await depot.ObtenirParUtilisateurAsync(utilisateur);
+            existant!.AjouterDomaines([DomaineMetier.Creer("Data Science")]);
+            await depot.AjouterOuMettreAJourAsync(existant);
+        }
+
+        await using var lecture = CreerContexte();
+        var relu = await new AbonnementRepository(lecture).ObtenirParUtilisateurAsync(utilisateur);
+
+        relu!.Domaines.Should().HaveCount(2);
+    }
+
+    [Fact]
     public async Task UneNotificationEstPersisteePourSonDestinataire()
     {
         var destinataire = Guid.NewGuid();
         var notification = Notification.Creer(destinataire, "Nouvelle annonce", "Cloud Azure", CanalDiffusion.InApp);
         await using (var ctx = CreerContexte())
         {
-            await new DepotNotificationsEfCore(ctx).AjouterAsync(notification);
-            await new DepotNotificationsEfCore(ctx).EnregistrerAsync();
+            await new NotificationRepository(ctx).AjouterAsync(notification);
         }
 
         await using var lecture = CreerContexte();
-        var relues = await new DepotNotificationsEfCore(lecture).ListerParDestinataireAsync(destinataire);
+        var relues = await new NotificationRepository(lecture).ListerParDestinataireAsync(destinataire);
 
         relues.Should().ContainSingle().Which.Titre.Should().Be("Nouvelle annonce");
     }

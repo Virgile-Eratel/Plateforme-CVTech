@@ -21,6 +21,9 @@ public sealed class SourceExterne : ObjetValeur
         return new SourceExterne(nom.Trim(), url?.Trim() ?? string.Empty);
     }
 
+    /// <summary>Reconstruit le VO depuis la persistance (sans revalider les invariants).</summary>
+    public static SourceExterne Reconstituer(string nom, string url) => new(nom, url);
+
     protected override IEnumerable<object?> ComposantsEgalite()
     {
         yield return Nom;

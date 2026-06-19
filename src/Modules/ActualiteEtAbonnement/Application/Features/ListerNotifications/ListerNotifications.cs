@@ -1,5 +1,7 @@
 using MediatR;
 
+using CVTech.Modules.ActualiteEtAbonnement.Domaine;
+
 namespace CVTech.Modules.ActualiteEtAbonnement.Application.Features.ListerNotifications;
 
 /// <summary>Liste les notifications in-app d'un utilisateur (les siennes).</summary>

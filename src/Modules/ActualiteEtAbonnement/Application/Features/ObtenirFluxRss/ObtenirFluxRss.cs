@@ -1,5 +1,7 @@
 using MediatR;
 
+using CVTech.Modules.ActualiteEtAbonnement.Domaine;
+
 namespace CVTech.Modules.ActualiteEtAbonnement.Application.Features.ObtenirFluxRss;
 
 /// <summary>
