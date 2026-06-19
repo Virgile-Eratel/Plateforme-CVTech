@@ -109,6 +109,109 @@ graph LR
     Identite -.IVerificateurPermission.-> Actualite
 ```
 
+### Modèle de données
+
+Chaque module possède ses propres tables (schéma étanche). Les liens entre modules
+sont des **références logiques par `Guid`** (pas de clé étrangère physique inter-modules) :
+un `CandidatId` ou un `EntrepriseId` désigne un `Utilisateur` de `GestionIdentite`.
+Les types `DomaineMetier`, `CahierDesCharges`, `BaremeTJM` et `SourceExterne` sont des
+**objets de valeur** (sans identité propre, persistés en colonnes de leur agrégat).
+
+```mermaid
+erDiagram
+    Utilisateur {
+        Guid Id PK
+        string Email
+        RoleUtilisateur Role "Candidat | Entreprise | Administrateur"
+        bool EstBloque
+        string MotDePasseHash "haché (jamais en clair)"
+    }
+
+    CurriculumVitae {
+        Guid Id PK
+        Guid CandidatId FK "→ Utilisateur (1 CV / candidat)"
+        string Presentation
+        string[] Competences
+    }
+    AnnonceEmploi {
+        Guid Id PK
+        Guid EntrepriseId FK "→ Utilisateur"
+        string Titre
+        string Description
+        TypeContrat TypeContrat "CDI | CDD | Stage | Alternance | Apprentissage"
+        DomaineMetier Domaine "objet de valeur"
+        DateTimeOffset DatePublication
+    }
+    Candidature {
+        Guid Id PK
+        Guid AnnonceId FK "→ AnnonceEmploi"
+        Guid CandidatId FK "→ Utilisateur"
+        string LettreMotivation "optionnel"
+        DateTimeOffset DateDepot
+    }
+
+    AppelOffre {
+        Guid Id PK
+        Guid EntrepriseId FK "→ Utilisateur"
+        string Titre
+        CahierDesCharges CahierDesCharges "objet de valeur"
+        DomaineMetier Domaine "objet de valeur"
+        StatutAppelOffre Statut "Ouvert | Attribue"
+        Guid PropositionLaureateId FK "→ PropositionFreelance (optionnel)"
+        DateTimeOffset DatePublication
+    }
+    PropositionFreelance {
+        Guid Id PK
+        Guid AppelOffreId FK "→ AppelOffre"
+        Guid CandidatId FK "→ Utilisateur"
+        BaremeTJM Tjm "objet de valeur (TJM > 0)"
+        int DureeJours
+        string Methodologie
+        DateTimeOffset DateSoumission
+    }
+
+    ArticleActualite {
+        Guid Id PK
+        Guid AuteurId FK "→ Utilisateur (Admin)"
+        string Titre
+        string Contenu
+        CategorieEditoriale Categorie
+        DomaineMetier Domaine "objet de valeur (optionnel)"
+        SourceExterne Source "objet de valeur (optionnel)"
+        DateTimeOffset DatePublication
+    }
+    Abonnement {
+        Guid Id PK
+        Guid UtilisateurId FK "→ Utilisateur"
+        CanalDiffusion Canal "InApp | Email"
+        DomaineMetier[] Domaines "objets de valeur"
+    }
+    Notification {
+        Guid Id PK
+        Guid DestinataireId FK "→ Utilisateur"
+        string Titre
+        string Message
+        CanalDiffusion Canal "InApp | Email"
+        DateTimeOffset DateCreation
+        bool Lu
+    }
+
+    Utilisateur ||--o| CurriculumVitae : "possède"
+    Utilisateur ||--o{ AnnonceEmploi : "publie"
+    Utilisateur ||--o{ Candidature : "dépose"
+    AnnonceEmploi ||--o{ Candidature : "reçoit"
+    Utilisateur ||--o{ AppelOffre : "publie"
+    Utilisateur ||--o{ PropositionFreelance : "soumet"
+    AppelOffre ||--o{ PropositionFreelance : "reçoit"
+    AppelOffre |o--o| PropositionFreelance : "lauréat"
+    Utilisateur ||--o{ ArticleActualite : "rédige"
+    Utilisateur ||--o{ Abonnement : "souscrit"
+    Utilisateur ||--o{ Notification : "reçoit"
+```
+
+> Trait plein = relation intra-module (clé étrangère réelle) ;
+> les `FK` vers `Utilisateur` sont des références logiques inter-modules (par `Guid`).
+
 ---
 
 ## 🔌 Endpoints de l'API
