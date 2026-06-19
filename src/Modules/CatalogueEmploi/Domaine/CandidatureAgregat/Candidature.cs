@@ -26,4 +26,16 @@ public sealed class Candidature : RacineAgregat<Guid>
             DateDepot = DateTimeOffset.UtcNow
         };
     }
+
+    /// <summary>Réhydrate l'agrégat depuis la persistance (mapper Infrastructure), Id préservé.</summary>
+    public static Candidature Reconstituer(
+        Guid id, Guid annonceId, Guid candidatId, string? lettreMotivation, DateTimeOffset dateDepot) =>
+        new()
+        {
+            Id = id,
+            AnnonceId = annonceId,
+            CandidatId = candidatId,
+            LettreMotivation = lettreMotivation,
+            DateDepot = dateDepot
+        };
 }

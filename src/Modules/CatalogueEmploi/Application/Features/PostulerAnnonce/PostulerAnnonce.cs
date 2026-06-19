@@ -35,7 +35,6 @@ public sealed class PostulerAnnonceHandler(
 
         var candidature = Candidature.Deposer(annonce.Id, commande.CandidatId, commande.LettreMotivation);
         await depotCandidatures.AjouterAsync(candidature, ct);
-        await depotCandidatures.EnregistrerAsync(ct);
 
         return candidature.Id;
     }

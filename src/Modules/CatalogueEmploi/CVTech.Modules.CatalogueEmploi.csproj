@@ -4,6 +4,8 @@
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <!-- Contracts est un projet frere a la racine du module : l'exclure des globs du projet interne -->
+    <DefaultItemExcludes>$(DefaultItemExcludes);Contracts/**</DefaultItemExcludes>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,9 +20,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\SharedKernel\CVTech.SharedKernel.csproj" />
-    <ProjectReference Include="..\..\GestionIdentite\Contracts\CVTech.Modules.GestionIdentite.Contracts.csproj" />
-    <ProjectReference Include="..\Contracts\CVTech.Modules.CatalogueEmploi.Contracts.csproj" />
+    <ProjectReference Include="..\..\SharedKernel\CVTech.SharedKernel.csproj" />
+    <ProjectReference Include="..\GestionIdentite\Contracts\CVTech.Modules.GestionIdentite.Contracts.csproj" />
+    <ProjectReference Include="Contracts\CVTech.Modules.CatalogueEmploi.Contracts.csproj" />
   </ItemGroup>
 
 </Project>

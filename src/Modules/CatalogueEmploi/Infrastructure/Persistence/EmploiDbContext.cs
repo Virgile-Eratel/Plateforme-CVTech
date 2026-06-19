@@ -1,5 +1,5 @@
-using CVTech.Modules.CatalogueEmploi.Domaine;
 using CVTech.Modules.CatalogueEmploi.Infrastructure.Persistence.Conventions;
+using CVTech.Modules.CatalogueEmploi.Infrastructure.Persistence.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace CVTech.Modules.CatalogueEmploi.Infrastructure.Persistence;
@@ -9,9 +9,9 @@ public sealed class EmploiDbContext(DbContextOptions<EmploiDbContext> options) :
 {
     public const string Schema = "emploi";
 
-    public DbSet<AnnonceEmploi> Annonces => Set<AnnonceEmploi>();
-    public DbSet<CurriculumVitae> Cvs => Set<CurriculumVitae>();
-    public DbSet<Candidature> Candidatures => Set<Candidature>();
+    public DbSet<AnnonceEmploiEntity> Annonces => Set<AnnonceEmploiEntity>();
+    public DbSet<CurriculumVitaeEntity> Cvs => Set<CurriculumVitaeEntity>();
+    public DbSet<CandidatureEntity> Candidatures => Set<CandidatureEntity>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

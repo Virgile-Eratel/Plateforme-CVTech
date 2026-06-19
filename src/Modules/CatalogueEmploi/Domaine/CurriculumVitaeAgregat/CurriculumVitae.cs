@@ -21,6 +21,15 @@ public sealed class CurriculumVitae : RacineAgregat<Guid>
         return cv;
     }
 
+    /// <summary>Réhydrate l'agrégat depuis la persistance (mapper Infrastructure), Id préservé.</summary>
+    public static CurriculumVitae Reconstituer(
+        Guid id, Guid candidatId, string presentation, IEnumerable<string> competences)
+    {
+        var cv = new CurriculumVitae { Id = id, CandidatId = candidatId, Presentation = presentation };
+        cv._competences.AddRange(competences);
+        return cv;
+    }
+
     /// <summary>Met à jour le CV existant (un seul CV par candidat, on le révise au lieu d'en recréer).</summary>
     public void MettreAJour(string presentation, IEnumerable<string> competences) =>
         Appliquer(presentation, competences);

@@ -1,6 +1,8 @@
 using CVTech.Modules.CatalogueEmploi.Application;
 using MediatR;
 
+using CVTech.Modules.CatalogueEmploi.Domaine;
+
 namespace CVTech.Modules.CatalogueEmploi.Application.Features.ListerAnnonces;
 
 /// <summary>Consultation publique des annonces : action anonyme, sans permission.</summary>

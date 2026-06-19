@@ -37,9 +37,9 @@ public sealed class ConstituerCvHandler(
         else
         {
             cv.MettreAJour(commande.Presentation, commande.Competences);
+            await depot.MettreAJourAsync(cv, ct);
         }
 
-        await depot.EnregistrerAsync(ct);
         return cv.Id;
     }
 }

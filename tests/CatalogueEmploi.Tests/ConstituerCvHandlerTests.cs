@@ -62,6 +62,7 @@ public class ConstituerCvHandlerTests
         existant.Presentation.Should().Be("Présentation à jour");
         existant.Competences.Should().BeEquivalentTo("Azure", "Terraform");
         await _depot.DidNotReceive().AjouterAsync(Arg.Any<CurriculumVitae>(), Arg.Any<CancellationToken>());
-        await _depot.Received(1).EnregistrerAsync(Arg.Any<CancellationToken>());
+        await _depot.Received(1).MettreAJourAsync(
+            Arg.Is<CurriculumVitae>(c => c.Id == existant.Id), Arg.Any<CancellationToken>());
     }
 }

@@ -42,7 +42,6 @@ public sealed class PublierAnnonceHandler(
             commande.EntrepriseId, commande.Titre, commande.Description, commande.TypeContrat, domaine);
 
         await depot.AjouterAsync(annonce, ct);
-        await depot.EnregistrerAsync(ct);
 
         // 3. Publication de l'événement sur le bus interne (ADR 0003).
         await bus.PublierAsync(

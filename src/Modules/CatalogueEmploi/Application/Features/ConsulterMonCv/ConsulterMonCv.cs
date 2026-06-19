@@ -1,6 +1,8 @@
 using CVTech.Modules.GestionIdentite.Contracts;
 using MediatR;
 
+using CVTech.Modules.CatalogueEmploi.Domaine;
+
 namespace CVTech.Modules.CatalogueEmploi.Application.Features.ConsulterMonCv;
 
 /// <summary>Lecture par le candidat de SON propre CV. Renvoie null s'il n'en a pas encore constitué.</summary>

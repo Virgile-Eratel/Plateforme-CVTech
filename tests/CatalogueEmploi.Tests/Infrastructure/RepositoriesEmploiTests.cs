@@ -9,12 +9,12 @@ using Xunit;
 
 namespace CVTech.Modules.CatalogueEmploi.Tests.Infrastructure;
 
-/// <summary>Persistance EF Core (SQLite) : owned type DomaineMetier + collection de compétences.</summary>
-public class DepotsEmploiEfCoreTests : IDisposable
+/// <summary>Persistance EF Core (SQLite) : VO DomaineMetier aplati + collection de compétences.</summary>
+public class RepositoriesEmploiTests : IDisposable
 {
     private readonly SqliteConnection _connexion;
 
-    public DepotsEmploiEfCoreTests()
+    public RepositoriesEmploiTests()
     {
         _connexion = new SqliteConnection("DataSource=:memory:");
         _connexion.Open();
@@ -33,12 +33,11 @@ public class DepotsEmploiEfCoreTests : IDisposable
             Guid.NewGuid(), "Ingénieur Cloud", "Mission Azure", TypeContrat.CDI, domaine);
         await using (var ctx = CreerContexte())
         {
-            await new DepotAnnoncesEfCore(ctx).AjouterAsync(annonce);
-            await new DepotAnnoncesEfCore(ctx).EnregistrerAsync();
+            await new AnnonceRepository(ctx).AjouterAsync(annonce);
         }
 
         await using var lecture = CreerContexte();
-        var relue = await new DepotAnnoncesEfCore(lecture).ObtenirAsync(annonce.Id);
+        var relue = await new AnnonceRepository(lecture).ObtenirAsync(annonce.Id);
 
         relue.Should().NotBeNull();
         relue!.Titre.Should().Be("Ingénieur Cloud");
@@ -52,16 +51,15 @@ public class DepotsEmploiEfCoreTests : IDisposable
     {
         await using (var ctx = CreerContexte())
         {
-            var depot = new DepotAnnoncesEfCore(ctx);
+            var depot = new AnnonceRepository(ctx);
             await depot.AjouterAsync(AnnonceEmploi.Publier(
                 Guid.NewGuid(), "A1", "", TypeContrat.CDI, DomaineMetier.Creer("Cloud Azure")));
             await depot.AjouterAsync(AnnonceEmploi.Publier(
                 Guid.NewGuid(), "A2", "", TypeContrat.CDD, DomaineMetier.Creer("Data Science")));
-            await depot.EnregistrerAsync();
         }
 
         await using var lecture = CreerContexte();
-        var resultat = await new DepotAnnoncesEfCore(lecture).ListerAsync("cloud-azure");
+        var resultat = await new AnnonceRepository(lecture).ListerAsync("cloud-azure");
 
         resultat.Should().ContainSingle().Which.Titre.Should().Be("A1");
     }
@@ -73,14 +71,14 @@ public class DepotsEmploiEfCoreTests : IDisposable
             Guid.NewGuid(), "Développeuse senior", new[] { "C#", "Azure", "EF Core" });
         await using (var ctx = CreerContexte())
         {
-            await new DepotCvEfCore(ctx).AjouterAsync(cv);
-            await new DepotCvEfCore(ctx).EnregistrerAsync();
+            await new CvRepository(ctx).AjouterAsync(cv);
         }
 
         await using var lecture = CreerContexte();
-        var relu = await lecture.Set<CurriculumVitae>().FirstAsync(c => c.Id == cv.Id);
+        var relu = await new CvRepository(lecture).ObtenirParCandidatAsync(cv.CandidatId);
 
-        relu.Presentation.Should().Be("Développeuse senior");
+        relu.Should().NotBeNull();
+        relu!.Presentation.Should().Be("Développeuse senior");
         relu.Competences.Should().BeEquivalentTo("C#", "Azure", "EF Core");
     }
 
@@ -91,12 +89,11 @@ public class DepotsEmploiEfCoreTests : IDisposable
         var cv = CurriculumVitae.Constituer(candidatId, "Présentation", new[] { "C#" });
         await using (var ctx = CreerContexte())
         {
-            await new DepotCvEfCore(ctx).AjouterAsync(cv);
-            await new DepotCvEfCore(ctx).EnregistrerAsync();
+            await new CvRepository(ctx).AjouterAsync(cv);
         }
 
         await using var lecture = CreerContexte();
-        var relu = await new DepotCvEfCore(lecture).ObtenirParCandidatAsync(candidatId);
+        var relu = await new CvRepository(lecture).ObtenirParCandidatAsync(candidatId);
 
         relu.Should().NotBeNull();
         relu!.CandidatId.Should().Be(candidatId);
@@ -108,9 +105,32 @@ public class DepotsEmploiEfCoreTests : IDisposable
     {
         await using var lecture = CreerContexte();
 
-        var relu = await new DepotCvEfCore(lecture).ObtenirParCandidatAsync(Guid.NewGuid());
+        var relu = await new CvRepository(lecture).ObtenirParCandidatAsync(Guid.NewGuid());
 
         relu.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task MettreAJourUnCvExistantReviseSaPresentationEtSesCompetences()
+    {
+        var candidatId = Guid.NewGuid();
+        var cv = CurriculumVitae.Constituer(candidatId, "Ancienne", new[] { "C#" });
+        await using (var ctx = CreerContexte())
+        {
+            await new CvRepository(ctx).AjouterAsync(cv);
+        }
+
+        cv.MettreAJour("Nouvelle", new[] { "Azure", "Terraform" });
+        await using (var ctx = CreerContexte())
+        {
+            await new CvRepository(ctx).MettreAJourAsync(cv);
+        }
+
+        await using var lecture = CreerContexte();
+        var relu = await new CvRepository(lecture).ObtenirParCandidatAsync(candidatId);
+
+        relu!.Presentation.Should().Be("Nouvelle");
+        relu.Competences.Should().BeEquivalentTo("Azure", "Terraform");
     }
 
     public void Dispose() => _connexion.Dispose();

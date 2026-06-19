@@ -33,4 +33,19 @@ public sealed class AnnonceEmploi : RacineAgregat<Guid>
             DatePublication = DateTimeOffset.UtcNow
         };
     }
+
+    /// <summary>Réhydrate l'agrégat depuis la persistance (mapper Infrastructure), Id préservé.</summary>
+    public static AnnonceEmploi Reconstituer(
+        Guid id, Guid entrepriseId, string titre, string description, TypeContrat typeContrat,
+        DomaineMetier domaine, DateTimeOffset datePublication) =>
+        new()
+        {
+            Id = id,
+            EntrepriseId = entrepriseId,
+            Titre = titre,
+            Description = description,
+            TypeContrat = typeContrat,
+            Domaine = domaine,
+            DatePublication = datePublication
+        };
 }
