@@ -52,10 +52,10 @@ public sealed class ApiClient(HttpClient http, SessionUtilisateur session)
         return (await reponse.Content.ReadFromJsonAsync<CreationReponse>())!.Id;
     }
 
-    public async Task<Guid> ConstituerCvAsync(string presentation, IReadOnlyList<string> competences)
+    public async Task<Guid> ConstituerCvAsync(string presentation, IReadOnlyList<string> competences, int? age = null)
     {
         Authentifier();
-        var reponse = await http.PostAsJsonAsync("/emploi/cv", new { presentation, competences });
+        var reponse = await http.PostAsJsonAsync("/emploi/cv", new { presentation, competences, age });
         await AssurerSuccesAsync(reponse);
         return (await reponse.Content.ReadFromJsonAsync<CreationReponse>())!.Id;
     }

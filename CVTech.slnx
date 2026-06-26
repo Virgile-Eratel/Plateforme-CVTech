@@ -35,6 +35,9 @@
     <Project Path="src/Web/CVTech.Web.csproj" />
   </Folder>
   <Folder Name="/tests/" />
+  <Folder Name="/tests/Evaluations.Tests/">
+    <Project Path="tests/Evaluations.Tests/CVTech.Evaluations.Tests.csproj" />
+  </Folder>
   <Folder Name="/tests/ActualiteEtAbonnement.Tests/">
     <Project Path="tests/ActualiteEtAbonnement.Tests/CVTech.Modules.ActualiteEtAbonnement.Tests.csproj" />
   </Folder>

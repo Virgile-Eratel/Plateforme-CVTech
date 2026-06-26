@@ -15,9 +15,10 @@ public sealed class ConstituerCvEndpoint : IEndpoint
         routes.MapPost("/cv",
             async (ConstituerCvRequete r, ClaimsPrincipal u, ISender sender) =>
             {
-                var id = await sender.Send(new ConstituerCvCommand(u.IdUtilisateur(), r.Presentation, r.Competences));
+                var id = await sender.Send(
+                    new ConstituerCvCommand(u.IdUtilisateur(), r.Presentation, r.Competences, r.Age));
                 return Results.Created($"/emploi/cv/{id}", new { id });
             }).RequireAuthorization();
 }
 
-public sealed record ConstituerCvRequete(string Presentation, IReadOnlyList<string> Competences);
+public sealed record ConstituerCvRequete(string Presentation, IReadOnlyList<string> Competences, int? Age = null);

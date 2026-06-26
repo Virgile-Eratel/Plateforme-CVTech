@@ -15,6 +15,9 @@ public sealed class CurriculumVitaeConfiguration : IEntityTypeConfiguration<Curr
         builder.Property(c => c.CandidatId).IsRequired();
         builder.Property(c => c.Presentation).IsRequired().HasMaxLength(4000);
 
+        // Âge optionnel : colonne nullable (non imposée).
+        builder.Property(c => c.Age);
+
         // Liste de compétences : collection primitive stockée en JSON.
         builder.PrimitiveCollection(c => c.Competences).HasColumnName("Competences");
     }

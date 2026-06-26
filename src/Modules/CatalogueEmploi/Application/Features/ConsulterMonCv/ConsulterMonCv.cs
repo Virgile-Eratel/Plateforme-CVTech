@@ -8,7 +8,7 @@ namespace CVTech.Modules.CatalogueEmploi.Application.Features.ConsulterMonCv;
 /// <summary>Lecture par le candidat de SON propre CV. Renvoie null s'il n'en a pas encore constitué.</summary>
 public sealed record ConsulterMonCvQuery(Guid CandidatId) : IRequest<CvVue?>;
 
-public sealed record CvVue(Guid Id, string Presentation, IReadOnlyList<string> Competences);
+public sealed record CvVue(Guid Id, string Presentation, IReadOnlyList<string> Competences, int? Age);
 
 public sealed class ConsulterMonCvHandler(
     IVerificateurPermission permissions,
@@ -21,6 +21,6 @@ public sealed class ConsulterMonCvHandler(
         var cv = await depot.ObtenirParCandidatAsync(requete.CandidatId, ct);
         return cv is null
             ? null
-            : new CvVue(cv.Id, cv.Presentation, cv.Competences.ToList());
+            : new CvVue(cv.Id, cv.Presentation, cv.Competences.ToList(), cv.Age);
     }
 }

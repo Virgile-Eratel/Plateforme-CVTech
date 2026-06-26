@@ -83,6 +83,23 @@ public class RepositoriesEmploiTests : IDisposable
     }
 
     [Fact]
+    public async Task UnCvConserveLAgeRenseigne()
+    {
+        var cv = CurriculumVitae.Constituer(
+            Guid.NewGuid(), "Développeuse senior", new[] { "C#" }, age: 42);
+        await using (var ctx = CreerContexte())
+        {
+            await new CvRepository(ctx).AjouterAsync(cv);
+        }
+
+        await using var lecture = CreerContexte();
+        var relu = await new CvRepository(lecture).ObtenirParCandidatAsync(cv.CandidatId);
+
+        relu.Should().NotBeNull();
+        relu!.Age.Should().Be(42);
+    }
+
+    [Fact]
     public async Task ObtenirParCandidatRetrouveLeCvDuCandidat()
     {
         var candidatId = Guid.NewGuid();

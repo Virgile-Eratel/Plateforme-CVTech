@@ -44,6 +44,8 @@ else
                       placeholder="Décrivez votre parcours, vos objectifs, votre valeur ajoutée…"></textarea>
             <label>Compétences (séparées par des virgules)</label>
             <input @bind="_competences" placeholder="C#, Azure, Terraform" />
+            <label>Âge (optionnel)</label>
+            <input type="number" min="16" max="100" @bind="_age" placeholder="Ex. 34" />
             <br /><br />
             <button @onclick="Enregistrer" disabled="@_occupe">Enregistrer</button>
             @if (_cv is not null)
@@ -68,6 +70,10 @@ else
                 <button class="petit secondaire" @onclick="DemarrerEdition">Modifier</button>
             </div>
             <p class="profil-presentation">@_cv.Presentation</p>
+            @if (_cv.Age is int age)
+            {
+                <p class="muet">Âge : @age ans</p>
+            }
         </div>
 
         <div class="carte">
@@ -95,6 +101,7 @@ else
     private bool _edition;
     private bool _occupe;
     private string _presentation = "", _competences = "";
+    private int? _age;
     private string? _message;
     private string _classe = "info";
 
@@ -124,6 +131,7 @@ else
     {
         _presentation = _cv?.Presentation ?? "";
         _competences = _cv is null ? "" : string.Join(", ", _cv.Competences);
+        _age = _cv?.Age;
         _message = null;
         _edition = true;
     }
@@ -147,7 +155,7 @@ else
         {
             var competences = _competences
                 .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-            await Api.ConstituerCvAsync(_presentation, competences);
+            await Api.ConstituerCvAsync(_presentation, competences, _age);
             await Charger();
             _edition = false;
             Avertir("CV enregistré.", "ok");

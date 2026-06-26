@@ -10,5 +10,6 @@ public sealed class CurriculumVitaeEntity
     public Guid Id { get; set; }
     public Guid CandidatId { get; set; }
     public string Presentation { get; set; } = default!;
+    public int? Age { get; set; }
     public List<string> Competences { get; set; } = [];
 }

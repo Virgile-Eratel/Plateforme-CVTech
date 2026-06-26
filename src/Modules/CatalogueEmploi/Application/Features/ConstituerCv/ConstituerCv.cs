@@ -8,7 +8,8 @@ namespace CVTech.Modules.CatalogueEmploi.Application.Features.ConstituerCv;
 public sealed record ConstituerCvCommand(
     Guid CandidatId,
     string Presentation,
-    IReadOnlyList<string> Competences) : IRequest<Guid>;
+    IReadOnlyList<string> Competences,
+    int? Age = null) : IRequest<Guid>;
 
 public sealed class ConstituerCvValidator : AbstractValidator<ConstituerCvCommand>
 {
@@ -16,6 +17,8 @@ public sealed class ConstituerCvValidator : AbstractValidator<ConstituerCvComman
     {
         RuleFor(c => c.CandidatId).NotEmpty();
         RuleFor(c => c.Presentation).NotEmpty();
+        // Âge optionnel ; la fourchette métier reste garantie par l'agrégat (16–100 ans).
+        RuleFor(c => c.Age!.Value).InclusiveBetween(16, 100).When(c => c.Age.HasValue);
     }
 }
 
@@ -31,12 +34,13 @@ public sealed class ConstituerCvHandler(
         var cv = await depot.ObtenirParCandidatAsync(commande.CandidatId, ct);
         if (cv is null)
         {
-            cv = CurriculumVitae.Constituer(commande.CandidatId, commande.Presentation, commande.Competences);
+            cv = CurriculumVitae.Constituer(
+                commande.CandidatId, commande.Presentation, commande.Competences, commande.Age);
             await depot.AjouterAsync(cv, ct);
         }
         else
         {
-            cv.MettreAJour(commande.Presentation, commande.Competences);
+            cv.MettreAJour(commande.Presentation, commande.Competences, commande.Age);
             await depot.MettreAJourAsync(cv, ct);
         }
 

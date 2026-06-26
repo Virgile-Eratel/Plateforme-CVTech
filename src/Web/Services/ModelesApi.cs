@@ -22,7 +22,7 @@ public sealed record AppelOffreVue(
 public sealed record NotificationVue(
     Guid Id, string Titre, string Message, bool Lu, DateTimeOffset DateCreation);
 
-public sealed record CvVue(Guid Id, string Presentation, IReadOnlyList<string> Competences);
+public sealed record CvVue(Guid Id, string Presentation, IReadOnlyList<string> Competences, int? Age);
 
 // --- Notification poussée en temps réel par le hub SignalR (méthode "RecevoirNotification") ---
 
